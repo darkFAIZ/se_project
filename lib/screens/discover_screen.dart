@@ -195,8 +195,16 @@ class DiscoverScreen extends StatelessWidget {
             onTap: (index) {
               if (index == 0) {
                 Navigator.pop(context);
-              } else if (index == 3) { // Profile index
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+              } else if (index == 2) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()), // <--- CartScreen used here
+                );
+              } else if (index == 3) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                );
               }
             },
             items: const [
