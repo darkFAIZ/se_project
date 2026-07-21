@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'discover_screen.dart';
 import 'cart_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -239,15 +240,11 @@ class HomeScreen extends StatelessWidget {
         showUnselectedLabels: false,
         onTap: (index) {
           if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DiscoverScreen()),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const DiscoverScreen()));
           } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CartScreen()),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
+          } else if (index == 3) { // Profile index
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
           }
         },
         items: const [

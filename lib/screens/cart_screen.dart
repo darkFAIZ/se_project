@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -294,7 +295,9 @@ class _CartScreenState extends State<CartScreen> {
               showUnselectedLabels: false,
               onTap: (index) {
                 if (index == 0) {
-                  Navigator.pop(context); // Go back to Home
+                  Navigator.pop(context);
+                } else if (index == 3) { // Profile index
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
                 }
               },
               items: const [
