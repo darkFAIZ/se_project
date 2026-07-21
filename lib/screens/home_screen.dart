@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'discover_screen.dart'; // Make sure this path is correct
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -6,7 +7,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAF7), // Soft off-white / light green tint background
+      backgroundColor: const Color(0xFFF9FAF7),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -55,7 +56,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // 2. ACTION CHIPS (HORIZONTAL SCROLL)
+              // 2. ACTION CHIPS
               SizedBox(
                 height: 38,
                 child: ListView(
@@ -64,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     _buildChip(
                       label: '% Promos',
-                      backgroundColor: const Color(0xFF1B4D2E), // Dark green highlight
+                      backgroundColor: const Color(0xFF1B4D2E),
                       textColor: Colors.white,
                       icon: null,
                     ),
@@ -95,7 +96,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // 3. PROMO BANNER (APPLES)
+              // 3. PROMO BANNER
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: ClipRRect(
@@ -117,7 +118,7 @@ class HomeScreen extends StatelessWidget {
                       Container(
                         height: 160,
                         width: double.infinity,
-                        color: Colors.black.withOpacity(0.2), // Dark overlay for text contrast
+                        color: Colors.black.withOpacity(0.2),
                       ),
                       const Padding(
                         padding: EdgeInsets.only(left: 24.0),
@@ -138,7 +139,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // 4. TYPE SECTION (HEADER)
+              // 4. TYPE SECTION
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
@@ -158,7 +159,6 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // 4. TYPE SECTION (HORIZONTAL SCROLL LIST)
               SizedBox(
                 height: 110,
                 child: ListView(
@@ -190,7 +190,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // 5. RECOMMENDED SECTION (HEADER)
+              // 5. RECOMMENDED SECTION
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
@@ -210,7 +210,6 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // 5. RECOMMENDED SECTION (HORIZONTAL SCROLL LIST)
               SizedBox(
                 height: 240,
                 child: ListView(
@@ -247,7 +246,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      // 6. BOTTOM NAVIGATION BAR
+      // 6. BOTTOM NAVIGATION BAR WITH WORKING ONTAP
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
@@ -255,6 +254,14 @@ class HomeScreen extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
+        onTap: (index) {
+          if (index == 1) { // 1 is the index of the Explore/Discover button
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DiscoverScreen()),
+            );
+          }
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled, size: 26),
@@ -284,7 +291,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget for action chips
   static Widget _buildChip({
     required String label,
     required Color backgroundColor,
@@ -318,7 +324,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// Circular Category Item Widget
 class _CategoryCircleItem extends StatelessWidget {
   final String imageUrl;
   final String label;
@@ -353,7 +358,6 @@ class _CategoryCircleItem extends StatelessWidget {
   }
 }
 
-// Product Card Widget
 class _ProductCard extends StatelessWidget {
   final String imageUrl;
   final String category;
@@ -372,14 +376,13 @@ class _ProductCard extends StatelessWidget {
     return Container(
       width: 150,
       decoration: BoxDecoration(
-        color: const Color(0xFFE2EAD6), // Light green container background
+        color: const Color(0xFFE2EAD6),
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
@@ -395,8 +398,6 @@ class _ProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-
-          // Category
           Text(
             category,
             style: const TextStyle(
@@ -406,8 +407,6 @@ class _ProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-
-          // Title
           Text(
             title,
             style: const TextStyle(
@@ -419,8 +418,6 @@ class _ProductCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
-
-          // Price
           Text(
             price,
             style: const TextStyle(
