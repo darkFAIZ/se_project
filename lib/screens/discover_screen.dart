@@ -184,19 +184,25 @@ class DiscoverScreen extends StatelessWidget {
 
       // 5. BOTTOM NAVIGATION BAR
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Active tab on Explore / Discover
+        currentIndex: 1, // Set to 1 because Discover/Explore is active here
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
+        onTap: (index) {
+          if (index == 0) {
+            // Index 0 is Home -> Pop back to HomeScreen!
+            Navigator.pop(context);
+          }
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled, size: 26),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore, size: 26),
+            icon: Icon(Icons.explore_outlined, size: 26),
             label: 'Explore',
           ),
           BottomNavigationBarItem(

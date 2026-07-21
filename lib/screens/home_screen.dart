@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'discover_screen.dart'; // Make sure this path is correct
+import 'discover_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -246,16 +246,17 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      // 6. BOTTOM NAVIGATION BAR WITH WORKING ONTAP
+      // BOTTOM NAVIGATION BAR
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+        currentIndex: 0, // Highlight Home
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
-          if (index == 1) { // 1 is the index of the Explore/Discover button
+          if (index == 1) {
+            // Tapping Explore opens DiscoverScreen
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const DiscoverScreen()),
