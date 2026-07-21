@@ -185,49 +185,45 @@ class DiscoverScreen extends StatelessWidget {
       ),
 
       // 5. BOTTOM NAVIGATION BAR
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Set to 1 because Discover/Explore is active here
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) {
-          if (index == 0) { // Home button
-            Navigator.pop(context);
-          } else if (index == 2) { // Cart button
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CartScreen()),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled, size: 26),
-            label: 'Home',
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: 1, // Explore is active
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Colors.black,
+            unselectedItemColor: Colors.grey,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            onTap: (index) {
+              if (index == 0) {
+                Navigator.pop(context); // Go back to Home
+              } else if (index == 2) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                );
+              }
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_filled, size: 26),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.explore_outlined, size: 26),
+                label: 'Explore',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_cart_outlined, size: 26),
+                label: 'Cart',
+              ),
+              BottomNavigationBarItem(
+                icon: CircleAvatar(
+                  radius: 12,
+                  backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
+                ),
+                label: 'Profile',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined, size: 26),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined, size: 26),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none_rounded, size: 26),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: CircleAvatar(
-              radius: 12,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
-            ),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 

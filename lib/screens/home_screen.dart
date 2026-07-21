@@ -16,48 +16,37 @@ class HomeScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 12),
 
-              // 1. SEARCH BAR & MESSAGE ICON
+              // 1. SEARCH BAR (Message icon removed)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search',
-                            hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
-                            prefixIcon: Icon(Icons.search, color: Colors.grey),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
+                    ],
+                  ),
+                  child: const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
                     ),
-                    const SizedBox(width: 12),
-                    IconButton(
-                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 26, color: Colors.black87),
-                      onPressed: () {},
-                    ),
-                  ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: 16),
 
-              // 2. ACTION CHIPS
+              // 2. ACTION CHIPS (Farmers chip removed)
               SizedBox(
                 height: 38,
                 child: ListView(
@@ -76,13 +65,6 @@ class HomeScreen extends StatelessWidget {
                       backgroundColor: Colors.grey[200]!,
                       textColor: Colors.black87,
                       icon: Icons.history,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildChip(
-                      label: 'Farmers',
-                      backgroundColor: Colors.grey[200]!,
-                      textColor: Colors.black87,
-                      icon: Icons.person_outlined,
                     ),
                     const SizedBox(width: 8),
                     _buildChip(
@@ -247,23 +229,21 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      // BOTTOM NAVIGATION BAR
+      // BOTTOM NAVIGATION BAR (Notification removed)
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Highlight Home
+        currentIndex: 0,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
-
-        // Inside bottomNavigationBar:
         onTap: (index) {
-          if (index == 1) { // Explore button
+          if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const DiscoverScreen()),
             );
-          } else if (index == 2) { // Cart button
+          } else if (index == 2) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const CartScreen()),
@@ -282,10 +262,6 @@ class HomeScreen extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart_outlined, size: 26),
             label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none_rounded, size: 26),
-            label: 'Notifications',
           ),
           BottomNavigationBarItem(
             icon: CircleAvatar(

@@ -285,44 +285,40 @@ class _CartScreenState extends State<CartScreen> {
       ),
 
       // Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2, // Cart tab is active (index 2)
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pop(context); // Go back to Home
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled, size: 26),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined, size: 26),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined, size: 26),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none_rounded, size: 26),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: CircleAvatar(
-              radius: 12,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
+              bottomNavigationBar: BottomNavigationBar(
+              currentIndex: 2, // Cart is active
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: Colors.black,
+              unselectedItemColor: Colors.grey,
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              onTap: (index) {
+                if (index == 0) {
+                  Navigator.pop(context); // Go back to Home
+                }
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_filled, size: 26),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.explore_outlined, size: 26),
+                  label: 'Explore',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.shopping_cart_outlined, size: 26),
+                  label: 'Cart',
+                ),
+                BottomNavigationBarItem(
+                  icon: CircleAvatar(
+                    radius: 12,
+                    backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
+                  ),
+                  label: 'Profile',
+                ),
+              ],
             ),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }
