@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'cart_screen.dart';
+
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
@@ -191,9 +193,13 @@ class DiscoverScreen extends StatelessWidget {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
-          if (index == 0) {
-            // Index 0 is Home -> Pop back to HomeScreen!
+          if (index == 0) { // Home button
             Navigator.pop(context);
+          } else if (index == 2) { // Cart button
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CartScreen()),
+            );
           }
         },
         items: const [

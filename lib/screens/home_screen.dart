@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'discover_screen.dart';
+import 'cart_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -254,12 +255,18 @@ class HomeScreen extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
+
+        // Inside bottomNavigationBar:
         onTap: (index) {
-          if (index == 1) {
-            // Tapping Explore opens DiscoverScreen
+          if (index == 1) { // Explore button
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const DiscoverScreen()),
+            );
+          } else if (index == 2) { // Cart button
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CartScreen()),
             );
           }
         },
