@@ -12,7 +12,7 @@ class TerraKarsaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Green Farm',
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green, useMaterial3: true),
       home: const LoginScreen(), // FIXED: Starts on the Sign-Up screen
     );
