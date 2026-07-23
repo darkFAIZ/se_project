@@ -17,37 +17,95 @@ class HomeScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 12),
 
-              // 1. SEARCH BAR (Message icon removed)
+              // 1. SEARCH BAR WITH CHAT & CHECKOUT BUTTONS ON THE RIGHT
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                child: Row(
+                  children: [
+                    // Search Bar
+                    Expanded(
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search',
+                            hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                            prefixIcon: Icon(Icons.search, color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                  child: const TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 12),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+
+                    // Chat Button
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.black87, size: 22),
+                        onPressed: () {
+                          // Add chat action here if needed
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Checkout Button
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black87, size: 22),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const CartScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
               const SizedBox(height: 16),
 
-              // 2. ACTION CHIPS (Farmers chip removed)
+              // 2. ACTION CHIPS
               SizedBox(
                 height: 38,
                 child: ListView(
@@ -230,7 +288,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      // BOTTOM NAVIGATION BAR (Notification removed)
+      // BOTTOM NAVIGATION BAR
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
@@ -240,11 +298,20 @@ class HomeScreen extends StatelessWidget {
         showUnselectedLabels: false,
         onTap: (index) {
           if (index == 1) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const DiscoverScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DiscoverScreen()),
+            );
           } else if (index == 2) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
-          } else if (index == 3) { // Profile index
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CartScreen()),
+            );
+          } else if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
           }
         },
         items: const [
