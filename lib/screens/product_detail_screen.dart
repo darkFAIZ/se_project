@@ -38,7 +38,6 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category & Subcategory Badges (Polymorphic color)
                   Row(
                     children: [
                       Container(
@@ -70,7 +69,6 @@ class ProductDetailScreen extends StatelessWidget {
                   
                   const SizedBox(height: 10),
 
-                  // Product Name
                   Text(
                     product.name,
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -78,9 +76,8 @@ class ProductDetailScreen extends StatelessWidget {
                   
                   const SizedBox(height: 8),
 
-                  // Price (using product.price)
                   Text(
-                    'Rp ${product.price} / kg',
+                    'Rp ${product.price}',
                     style: const TextStyle(
                       fontSize: 20, 
                       color: Color(0xFF233B2B), 
@@ -90,7 +87,6 @@ class ProductDetailScreen extends StatelessWidget {
 
                   const Divider(height: 30),
 
-                  // Farmer Info
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const CircleAvatar(
@@ -106,7 +102,6 @@ class ProductDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Available Stock Chip
                   Chip(
                     label: Text(
                       'Available Stock: ${product.availableQuantityKg} kg',
@@ -120,26 +115,7 @@ class ProductDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        color: Colors.white,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF233B2B),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Order for ${product.name} initiated directly with ${product.farmerName}!')),
-            );
-          },
-          child: const Text(
-            'Buy Directly from Farmer',
-            style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+      // bottomNavigationBar removed entirely
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'main_shell_screen.dart'; // Reroutes to shell holding bottom nav bar
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,11 +11,18 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
 
-  void _navigateToHome() {
+  void _navigateToMainShell() {
+    // Route to MainShellScreen and remove LoginScreen from back stack
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const MainShellScreen()),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -31,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
               
               // App Name
               const Text(
-                'Green Farm',
+                'Kebunku',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -41,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Plant Icon (Using standard built-in icon)
+              // Plant Icon
               const Icon(
                 Icons.eco_rounded,
                 size: 56,
@@ -108,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     elevation: 0,
                   ),
-                  onPressed: _navigateToHome,
+                  onPressed: _navigateToMainShell,
                   child: const Text(
                     'Continue',
                     style: TextStyle(
@@ -150,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     elevation: 0,
                   ),
-                  onPressed: _navigateToHome,
+                  onPressed: _navigateToMainShell,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -190,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     elevation: 0,
                   ),
-                  onPressed: _navigateToHome,
+                  onPressed: _navigateToMainShell,
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -252,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      'GreenFarm company',
+                      'Kebunku Company',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
