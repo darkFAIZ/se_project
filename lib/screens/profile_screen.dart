@@ -40,14 +40,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   // Pick Image from Device Gallery
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-      });
-    }
+Future<void> _pickImage(StateSetter setModalState) async {
+  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  if (image != null) {
+    setModalState(() {
+      _selectedImage = File(image.path);
+    });
   }
+}
 
   // Bottom Sheet Form to Add New Selling Item
   void _showUploadDialog() {
@@ -90,41 +90,34 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     const SizedBox(height: 12),
 
                     // Image Picker Widget
-                    GestureDetector(
-                      onTap: () async {
-                        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-                        if (image != null) {
-                          setModalState(() {
-                            _selectedImage = File(image.path);
-                          });
-                        }
-                      },
-                      child: Container(
-                        height: 140,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
+                        GestureDetector(
+                        onTap: () => _pickImage(setModalState), // <--- Calling _pickImage here!
+                        child: Container(
+                          height: 140,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: _selectedImage != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.add_a_photo_outlined, size: 36, color: Colors.grey),
+                                    SizedBox(height: 6),
+                                    Text(
+                                      'Tap to choose image from device',
+                                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                                    ),
+                                  ],
+                                ),
                         ),
-                        child: _selectedImage != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.add_a_photo_outlined, size: 36, color: Colors.grey),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    'Tap to choose image from device',
-                                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                                  ),
-                                ],
-                              ),
                       ),
-                    ),
                     const SizedBox(height: 12),
 
                     // Title Field
