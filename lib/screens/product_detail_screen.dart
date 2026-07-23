@@ -9,49 +9,110 @@ class ProductDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF9FAF7),
       appBar: AppBar(
         title: Text(product.name),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF233B2B),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // FIXED HERE
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Product Banner Image
             Image.network(
               product.imageUrl,
               width: double.infinity,
               height: 250,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                height: 250,
+                color: Colors.grey[300],
+                child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+              ),
             ),
+            
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start, // FIXED HERE
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Category & Subcategory Badges (Polymorphic color)
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: product.getBadgeColor(),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          product.categoryName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '• ${product.subCategory}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 10),
+
+                  // Product Name
                   Text(
                     product.name,
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
+                  
                   const SizedBox(height: 8),
+
+                  // Price (using product.price)
                   Text(
-                    'Rp ${product.pricePerKg.toStringAsFixed(0)} / kg',
-                    style: const TextStyle(fontSize: 20, color: Colors.green, fontWeight: FontWeight.bold),
+                    'Rp ${product.price} / kg',
+                    style: const TextStyle(
+                      fontSize: 20, 
+                      color: Color(0xFF233B2B), 
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+
                   const Divider(height: 30),
+
+                  // Farmer Info
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const CircleAvatar(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Color(0xFF233B2B),
                       child: Icon(Icons.agriculture, color: Colors.white),
                     ),
-                    title: Text('Directly from ${product.farmerName}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(
+                      'Directly from ${product.farmerName}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     subtitle: Text(product.location),
                   ),
+
                   const SizedBox(height: 12),
+
+                  // Available Stock Chip
                   Chip(
-                    label: Text('Available Stock: ${product.availableQuantityKg} kg'),
-                    backgroundColor: Colors.green[50],
+                    label: Text(
+                      'Available Stock: ${product.availableQuantityKg} kg',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    backgroundColor: const Color(0xFFE2EAD6),
                   ),
                 ],
               ),
@@ -61,17 +122,22 @@ class ProductDetailScreen extends StatelessWidget {
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
+        color: Colors.white,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
+            backgroundColor: const Color(0xFF233B2B),
             padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Order initiated directly with farmer!')),
+              SnackBar(content: Text('Order for ${product.name} initiated directly with ${product.farmerName}!')),
             );
           },
-          child: const Text('Buy Directly from Farmer', style: TextStyle(fontSize: 16, color: Colors.white)),
+          child: const Text(
+            'Buy Directly from Farmer',
+            style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );

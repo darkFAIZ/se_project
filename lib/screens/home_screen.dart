@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'discover_screen.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
+import 'category_search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -210,21 +211,25 @@ class HomeScreen extends StatelessWidget {
                     _CategoryCircleItem(
                       imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=300',
                       label: 'Vegetable',
+                      categoryKey: 'Vegetables',
                     ),
                     SizedBox(width: 18),
                     _CategoryCircleItem(
                       imageUrl: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=300',
                       label: 'Fruit',
+                      categoryKey: 'Fruit',
                     ),
                     SizedBox(width: 18),
                     _CategoryCircleItem(
                       imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300',
                       label: 'Seasoning',
+                      categoryKey: 'Seasoning',
                     ),
                     SizedBox(width: 18),
                     _CategoryCircleItem(
                       imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300',
                       label: 'Rice &\nWheat',
+                      categoryKey: 'Grains',
                     ),
                   ],
                 ),
@@ -372,36 +377,49 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// Update category circle item to handle tap callbacks
 class _CategoryCircleItem extends StatelessWidget {
   final String imageUrl;
   final String label;
+  final String categoryKey;
 
   const _CategoryCircleItem({
     required this.imageUrl,
     required this.label,
+    required this.categoryKey,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 34,
-          backgroundColor: Colors.grey[200],
-          backgroundImage: NetworkImage(imageUrl),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-            height: 1.1,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategorySearchScreen(categoryTitle: categoryKey),
           ),
-        ),
-      ],
+        );
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: Colors.grey[200],
+            backgroundImage: NetworkImage(imageUrl),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
