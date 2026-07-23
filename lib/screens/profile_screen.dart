@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+// Shared global list notifier so posts persist across screen transitions
+final ValueNotifier<List<Map<String, dynamic>>> userPostsNotifier = ValueNotifier([]);
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,10 +20,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _imageController = TextEditingController();
 
-  // Dynamic list to store user uploaded posts
-  final List<Map<String, String>> _userPosts = [];
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -32,12 +36,23 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     _titleController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
-    _imageController.dispose();
     super.dispose();
+  }
+
+  // Pick Image from Device Gallery
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+    }
   }
 
   // Bottom Sheet Form to Add New Selling Item
   void _showUploadDialog() {
+    _selectedImage = null; // Reset image preview on modal open
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -45,122 +60,151 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            top: 20,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Sell Your Harvest / Item',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sell Your Harvest / Item',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
+                    const SizedBox(height: 12),
+
+                    // Image Picker Widget
+                    GestureDetector(
+                      onTap: () async {
+                        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                        if (image != null) {
+                          setModalState(() {
+                            _selectedImage = File(image.path);
+                          });
+                        }
+                      },
+                      child: Container(
+                        height: 140,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: _selectedImage != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.add_a_photo_outlined, size: 36, color: Colors.grey),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    'Tap to choose image from device',
+                                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Title Field
+                    TextField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        labelText: 'Title / Product Name',
+                        hintText: 'e.g. Fresh Organic Tomatoes',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Price Field
+                    TextField(
+                      controller: _priceController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Price (Rp)',
+                        hintText: 'e.g. 15000',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Description Field
+                    TextField(
+                      controller: _descriptionController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: 'Description',
+                        hintText: 'Describe your product...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Upload Submit Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF233B2B),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          if (_titleController.text.isNotEmpty && _priceController.text.isNotEmpty) {
+                            // Update global persistent list
+                            userPostsNotifier.value = [
+                              {
+                                'title': _titleController.text,
+                                'price': _priceController.text,
+                                'description': _descriptionController.text,
+                                'imageFile': _selectedImage,
+                              },
+                              ...userPostsNotifier.value,
+                            ];
+
+                            // Clear controllers
+                            _titleController.clear();
+                            _priceController.clear();
+                            _descriptionController.clear();
+                            _selectedImage = null;
+
+                            Navigator.pop(context); // Close bottom sheet
+                            _tabController.animateTo(2); // Switch to 'Your posts' tab
+                          }
+                        },
+                        child: const Text(
+                          'Upload Item',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-
-                // Image URL Field
-                TextField(
-                  controller: _imageController,
-                  decoration: InputDecoration(
-                    labelText: 'Image URL',
-                    hintText: 'https://images.unsplash.com/...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Title Field
-                TextField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Title / Product Name',
-                    hintText: 'e.g. Fresh Organic Tomatoes',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Price Field
-                TextField(
-                  controller: _priceController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Price (Rp)',
-                    hintText: 'e.g. 15000',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Description Field
-                TextField(
-                  controller: _descriptionController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    hintText: 'Describe your product...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Upload Submit Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF233B2B),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: () {
-                      if (_titleController.text.isNotEmpty && _priceController.text.isNotEmpty) {
-                        setState(() {
-                          _userPosts.insert(0, {
-                            'title': _titleController.text,
-                            'price': _priceController.text,
-                            'description': _descriptionController.text,
-                            'image': _imageController.text.isNotEmpty
-                                ? _imageController.text
-                                : 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400',
-                          });
-                        });
-
-                        // Clear input fields
-                        _titleController.clear();
-                        _priceController.clear();
-                        _descriptionController.clear();
-                        _imageController.clear();
-
-                        Navigator.pop(context); // Close bottom sheet
-
-                        // Switch automatically to 'Your posts' tab (index 2)
-                        _tabController.animateTo(2);
-                      }
-                    },
-                    child: const Text(
-                      'Upload Item',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -172,14 +216,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF3F7EC),
 
-      // Floating Plus Button for Farmers/Sellers to Add Items
+      // Floating Plus Button
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF233B2B),
         onPressed: _showUploadDialog,
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
 
-      // LEFT DRAWER (3-bar button)
+      // LEFT DRAWER
       drawer: Drawer(
         backgroundColor: Colors.white,
         child: SafeArea(
@@ -206,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ),
       ),
 
-      // RIGHT DRAWER (Settings button)
+      // RIGHT DRAWER
       endDrawer: Drawer(
         backgroundColor: Colors.white,
         child: SafeArea(
@@ -321,16 +365,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // 1. Favorite (Empty)
                   _buildEmptyState('No favorites yet.'),
-
-                  // 2. Save (Empty)
                   _buildEmptyState('No saved items yet.'),
-
-                  // 3. Your Posts (Populated when user uploads via Floating Plus Button)
-                  _userPosts.isEmpty
-                      ? _buildEmptyState('No posts yet. Tap + to upload an item to sell!')
-                      : _buildUserPostsGrid(),
+                  
+                  // Re-renders automatically whenever userPostsNotifier receives a new post
+                  ValueListenableBuilder<List<Map<String, dynamic>>>(
+                    valueListenable: userPostsNotifier,
+                    builder: (context, posts, child) {
+                      if (posts.isEmpty) {
+                        return _buildEmptyState('No posts yet. Tap + to upload an item to sell!');
+                      }
+                      return _buildUserPostsGrid(posts);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -376,7 +423,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  // Widget for Empty States (Favorite & Save)
   Widget _buildEmptyState(String text) {
     return Center(
       child: Text(
@@ -386,8 +432,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  // Grid Builder for Uploaded Posts
-  Widget _buildUserPostsGrid() {
+  Widget _buildUserPostsGrid(List<Map<String, dynamic>> posts) {
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -396,9 +441,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         mainAxisSpacing: 14,
         childAspectRatio: 0.8,
       ),
-      itemCount: _userPosts.length,
+      itemCount: posts.length,
       itemBuilder: (context, index) {
-        final post = _userPosts[index];
+        final post = posts[index];
+        final File? imageFile = post['imageFile'];
+
         return Container(
           decoration: BoxDecoration(
             color: const Color(0xFFE2EAD6),
@@ -411,26 +458,27 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    post['image']!,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
-                    ),
-                  ),
+                  child: imageFile != null
+                      ? Image.file(
+                          imageFile,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image, color: Colors.grey),
+                        ),
                 ),
               ),
               const SizedBox(height: 6),
               Text(
-                post['title']!,
+                post['title'] ?? '',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
-                'Rp ${post['price']}',
+                'Rp ${post['price'] ?? '0'}',
                 style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13),
               ),
             ],
