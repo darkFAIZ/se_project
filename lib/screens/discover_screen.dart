@@ -183,52 +183,7 @@ class DiscoverScreen extends StatelessWidget {
           ],
         ),
       ),
-
-      // 5. BOTTOM NAVIGATION BAR
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: 1, // Explore is active
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Colors.black,
-            unselectedItemColor: Colors.grey,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            onTap: (index) {
-              if (index == 0) {
-                Navigator.pop(context);
-              } else if (index == 2) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CartScreen()), // <--- CartScreen used here
-                );
-              } else if (index == 3) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
-                );
-              }
-            },
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_filled, size: 26),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore_outlined, size: 26),
-                label: 'Explore',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_cart_outlined, size: 26),
-                label: 'Cart',
-              ),
-              BottomNavigationBarItem(
-                icon: CircleAvatar(
-                  radius: 12,
-                  backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
-                ),
-                label: 'Profile',
-              ),
-            ],
-          ),
+      // bottomNavigationBar dihapus seluruhnya agar dihandle MainShellScreen
     );
   }
 

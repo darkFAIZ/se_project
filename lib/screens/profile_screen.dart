@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-// Shared global list notifier so posts persist across screen transitions
+// Shared global list notifier for user posts
 final ValueNotifier<List<Map<String, dynamic>>> userPostsNotifier = ValueNotifier([]);
 
 class ProfileScreen extends StatefulWidget {
@@ -16,7 +16,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
 
-  // Form Controllers for Item Upload
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
@@ -27,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 2); // Default to 'Your posts' tab
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 2);
   }
 
   @override
@@ -39,19 +38,17 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  // Pick Image from Device Gallery
-Future<void> _pickImage(StateSetter setModalState) async {
-  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-  if (image != null) {
-    setModalState(() {
-      _selectedImage = File(image.path);
-    });
+  Future<void> _pickImage(StateSetter setModalState) async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setModalState(() {
+        _selectedImage = File(image.path);
+      });
+    }
   }
-}
 
-  // Bottom Sheet Form to Add New Selling Item
   void _showUploadDialog() {
-    _selectedImage = null; // Reset image preview on modal open
+    _selectedImage = null;
 
     showModalBottomSheet(
       context: context,
@@ -89,38 +86,36 @@ Future<void> _pickImage(StateSetter setModalState) async {
                     ),
                     const SizedBox(height: 12),
 
-                    // Image Picker Widget
-                        GestureDetector(
-                        onTap: () => _pickImage(setModalState), // <--- Calling _pickImage here!
-                        child: Container(
-                          height: 140,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[300]!),
-                          ),
-                          child: _selectedImage != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.add_a_photo_outlined, size: 36, color: Colors.grey),
-                                    SizedBox(height: 6),
-                                    Text(
-                                      'Tap to choose image from device',
-                                      style: TextStyle(color: Colors.grey, fontSize: 13),
-                                    ),
-                                  ],
-                                ),
+                    GestureDetector(
+                      onTap: () => _pickImage(setModalState),
+                      child: Container(
+                        height: 140,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
                         ),
+                        child: _selectedImage != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.add_a_photo_outlined, size: 36, color: Colors.grey),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    'Tap to choose image from device',
+                                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                                  ),
+                                ],
+                              ),
                       ),
+                    ),
                     const SizedBox(height: 12),
 
-                    // Title Field
                     TextField(
                       controller: _titleController,
                       decoration: InputDecoration(
@@ -131,7 +126,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
                     ),
                     const SizedBox(height: 12),
 
-                    // Price Field
                     TextField(
                       controller: _priceController,
                       keyboardType: TextInputType.number,
@@ -143,7 +137,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
                     ),
                     const SizedBox(height: 12),
 
-                    // Description Field
                     TextField(
                       controller: _descriptionController,
                       maxLines: 3,
@@ -155,7 +148,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
                     ),
                     const SizedBox(height: 20),
 
-                    // Upload Submit Button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -166,7 +158,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
                         ),
                         onPressed: () {
                           if (_titleController.text.isNotEmpty && _priceController.text.isNotEmpty) {
-                            // Update global persistent list
                             userPostsNotifier.value = [
                               {
                                 'title': _titleController.text,
@@ -177,14 +168,13 @@ Future<void> _pickImage(StateSetter setModalState) async {
                               ...userPostsNotifier.value,
                             ];
 
-                            // Clear controllers
                             _titleController.clear();
                             _priceController.clear();
                             _descriptionController.clear();
                             _selectedImage = null;
 
-                            Navigator.pop(context); // Close bottom sheet
-                            _tabController.animateTo(2); // Switch to 'Your posts' tab
+                            Navigator.pop(context);
+                            _tabController.animateTo(2);
                           }
                         },
                         child: const Text(
@@ -209,14 +199,12 @@ Future<void> _pickImage(StateSetter setModalState) async {
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF3F7EC),
 
-      // Floating Plus Button
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF233B2B),
         onPressed: _showUploadDialog,
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
 
-      // LEFT DRAWER
       drawer: Drawer(
         backgroundColor: Colors.white,
         child: SafeArea(
@@ -243,7 +231,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
         ),
       ),
 
-      // RIGHT DRAWER
       endDrawer: Drawer(
         backgroundColor: Colors.white,
         child: SafeArea(
@@ -282,7 +269,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
           children: [
             const SizedBox(height: 12),
 
-            // TOP BAR
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -302,7 +288,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
 
             const SizedBox(height: 12),
 
-            // PROFILE HEADER
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Row(
@@ -334,7 +319,6 @@ Future<void> _pickImage(StateSetter setModalState) async {
 
             const SizedBox(height: 24),
 
-            // TAB BAR
             TabBar(
               controller: _tabController,
               labelColor: Colors.black,
@@ -353,15 +337,12 @@ Future<void> _pickImage(StateSetter setModalState) async {
 
             const SizedBox(height: 16),
 
-            // TAB VIEWS
             Expanded(
               child: TabBarView(
                 controller: _tabController,
                 children: [
                   _buildEmptyState('No favorites yet.'),
                   _buildEmptyState('No saved items yet.'),
-                  
-                  // Re-renders automatically whenever userPostsNotifier receives a new post
                   ValueListenableBuilder<List<Map<String, dynamic>>>(
                     valueListenable: userPostsNotifier,
                     builder: (context, posts, child) {
@@ -377,42 +358,7 @@ Future<void> _pickImage(StateSetter setModalState) async {
           ],
         ),
       ),
-
-      // BOTTOM NAVIGATION BAR
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pop(context);
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled, size: 26),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined, size: 26),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined, size: 26),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: CircleAvatar(
-              radius: 12,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
-            ),
-            label: 'Profile',
-          ),
-        ],
-      ),
+      // bottomNavigationBar DIHAPUS DARI SINI
     );
   }
 
