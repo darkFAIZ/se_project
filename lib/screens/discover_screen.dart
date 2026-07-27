@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'cart_screen.dart';
-import 'profile_screen.dart';
+
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
