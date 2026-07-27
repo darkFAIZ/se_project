@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'discover_screen.dart';
 import 'cart_screen.dart';
-import 'profile_screen.dart';
 import 'category_search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -18,12 +16,11 @@ class HomeScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 12),
 
-              // 1. SEARCH BAR WITH CHAT & CHECKOUT BUTTONS ON THE RIGHT
+              // 1. SEARCH BAR WITH CHAT & CHECKOUT BUTTONS
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
-                    // Search Bar
                     Expanded(
                       child: Container(
                         height: 48,
@@ -68,9 +65,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child: IconButton(
                         icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.black87, size: 22),
-                        onPressed: () {
-                          // Add chat action here if needed
-                        },
+                        onPressed: () {},
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -292,55 +287,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-
-      // BOTTOM NAVIGATION BAR
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DiscoverScreen()),
-            );
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CartScreen()),
-            );
-          } else if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled, size: 26),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined, size: 26),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined, size: 26),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: CircleAvatar(
-              radius: 12,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
-            ),
-            label: 'Profile',
-          ),
-        ],
-      ),
+      // bottomNavigationBar dihapus seluruhnya dari sini
     );
   }
 
@@ -377,7 +324,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// Update category circle item to handle tap callbacks
 class _CategoryCircleItem extends StatelessWidget {
   final String imageUrl;
   final String label;
