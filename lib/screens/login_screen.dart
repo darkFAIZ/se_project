@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main_shell_screen.dart'; // Reroutes to shell holding bottom nav bar
+import 'main_shell_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,266 +10,352 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
-
-  void _navigateToMainShell() {
-    // Route to MainShellScreen and remove LoginScreen from back stack
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainShellScreen()),
-    );
-  }
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  // Helper untuk navigasi langsung ke MainShellScreen setelah login sukses
+  void _navigateToHome() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainShellScreen()),
+    );
+  }
+
+  // 1. STANDARD EMAIL LOGIN
+  void _handleEmailLogin() {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email and password.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    _navigateToHome();
+  }
+
+  // 2. GOOGLE ACCOUNT SELECTOR MODAL
+  void _handleGoogleLogin() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.g_mobiledata, size: 36, color: Colors.blue),
+                    SizedBox(width: 8),
+                    Text(
+                      'Choose an account',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'to continue to Kebunku App',
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+                const SizedBox(height: 20),
+                const Divider(height: 1),
+
+                // Mock Google Account 1
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFE2EAD6),
+                    child: Text('F', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  ),
+                  title: const Text('Faiz', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  subtitle: const Text('faiz.user@gmail.com', style: TextStyle(fontSize: 13)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToHome();
+                  },
+                ),
+                const Divider(height: 1),
+
+                // Mock Google Account 2
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFFFE5D9),
+                    child: Text('A', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  ),
+                  title: const Text('Aqiel Studio', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  subtitle: const Text('aqiel.dev@gmail.com', style: TextStyle(fontSize: 13)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToHome();
+                  },
+                ),
+                const Divider(height: 1),
+
+                // Add Another Account Option
+                ListTile(
+                  leading: const Icon(Icons.person_add_alt_1_outlined, color: Colors.black87),
+                  title: const Text('Add another account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToHome();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 3. APPLE SIGN-IN MODAL
+  void _handleAppleLogin() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.apple, size: 52, color: Colors.black),
+                const SizedBox(height: 12),
+                const Text(
+                  'Sign in with Apple ID',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Do you want to sign in to Kebunku using your Apple ID "faiz.user@icloud.com"?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black54, fontSize: 13),
+                ),
+                const SizedBox(height: 24),
+
+                // Passcode/FaceID Button Simulation
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.fingerprint, color: Colors.white),
+                    label: const Text(
+                      'Continue with Passcode / Face ID',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _navigateToHome();
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9FAF7),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 30),
-              
-              // App Name
-              const Text(
-                'Kebunku',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Plant Icon
-              const Icon(
-                Icons.eco_rounded,
-                size: 56,
-                color: Color(0xFF1B5E20),
-              ),
-              const SizedBox(height: 20),
-
-              // Title & Subtitle
-              const Text(
-                'Create an account',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Enter your email to sign up for this app',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Email Input Field
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  hintText: 'email@domain.com',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // App Logo / Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF233B2B),
+                    shape: BoxShape.circle,
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.black),
+                  child: const Icon(
+                    Icons.eco_rounded,
+                    size: 48,
+                    color: Colors.white,
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 16),
+                const Text(
+                  'Kebunku',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF233B2B),
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Connect directly with local farmers',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
 
-              // Continue Button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 36),
+
+                // Email Input
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email / Gmail Address',
+                    hintText: 'name@gmail.com',
+                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    elevation: 0,
-                  ),
-                  onPressed: _navigateToMainShell,
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-              // OR Divider
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey[300])),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Text(
-                      'or',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 13),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey[300])),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Google Sign-In
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.grey[100],
-                    side: BorderSide(color: Colors.grey[200]!),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: _navigateToMainShell,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'G',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[600],
-                        ),
+                // Password Input
+                TextField(
+                  controller: _passwordController,
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        'Continue with Google',
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
 
-              // Apple Sign-In
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.grey[100],
-                    side: BorderSide(color: Colors.grey[200]!),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: _navigateToMainShell,
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.apple, color: Colors.black, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Continue with Apple',
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                const SizedBox(height: 20),
+
+                // Login Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF233B2B),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Terms & Privacy
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.4),
-                  children: const [
-                    TextSpan(text: 'By clicking continue, you agree to our '),
-                    TextSpan(
-                      text: 'Terms of Service\n',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
-                    TextSpan(text: 'and '),
-                    TextSpan(
-                      text: 'Privacy Policy',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 36),
-
-              // Footer Logo & Brand
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.green,
-                      ),
-                      child: const Icon(
-                        Icons.eco,
-                        size: 14,
+                    onPressed: _handleEmailLogin,
+                    child: const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Kebunku Company',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Divider Or
+                Row(
+                  children: const [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('OR', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Social Logins
+                Row(
+                  children: [
+                    // Google Button
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.grey[300]!),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.g_mobiledata, size: 28, color: Colors.redAccent),
+                        label: const Text(
+                          'Google',
+                          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: _handleGoogleLogin,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Apple Button
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.apple, size: 22, color: Colors.white),
+                        label: const Text(
+                          'Apple',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: _handleAppleLogin,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
