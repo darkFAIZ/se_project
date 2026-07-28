@@ -12,16 +12,12 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Controller Sign In
   final TextEditingController _loginEmailController = TextEditingController();
   final TextEditingController _loginPasswordController = TextEditingController();
 
-  // Controller Sign Up / Create Account
   final TextEditingController _signUpNameController = TextEditingController();
   final TextEditingController _signUpEmailController = TextEditingController();
   final TextEditingController _signUpPasswordController = TextEditingController();
-
-  bool _isPasswordVisible = false;
 
   @override
   void initState() {
@@ -47,27 +43,33 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  // 1. LOGIN DENGAN EMAIL/PASSWORD
+  void _showSnackBar(String msg, {bool isError = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.redAccent : Colors.green,
+      ),
+    );
+  }
+
+  // 1. LOGIN WITH EMAIL
   void _handleEmailLogin() {
     final email = _loginEmailController.text.trim();
     if (email.isEmpty || _loginPasswordController.text.isEmpty) {
-      _showSnackBar('Please enter your email and password.');
+      _showSnackBar('Please enter email and password.');
       return;
     }
 
-    UserSession().login(
-      UserAccount(
-        id: 'usr_custom',
-        name: email.split('@').first,
-        email: email,
-        authType: 'email',
-        avatarUrl: 'https://i.pravatar.cc/300?img=8',
-      ),
-    );
-    _navigateToHome();
+    final success = UserSession().login(email);
+    if (success) {
+      _navigateToHome();
+    } else {
+      _showSnackBar('Account does not exist! Please create an account first.');
+      _tabController.animateTo(1); // Redirect to Create Account tab
+    }
   }
 
-  // 2. CREATE ACCOUNT BARU
+  // 2. CREATE ACCOUNT WITH EMAIL
   void _handleCreateAccount() {
     final name = _signUpNameController.text.trim();
     final email = _signUpEmailController.text.trim();
@@ -78,20 +80,21 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
-    final success = UserSession().registerWithEmail(
+    final success = UserSession().registerAccount(
       name: name,
       email: email,
-      password: password,
+      authType: 'email',
     );
 
     if (success) {
       _navigateToHome();
     } else {
-      _showSnackBar('Email already exists. Please sign in instead.');
+      _showSnackBar('Account already exists! Please Sign In instead.');
+      _tabController.animateTo(0);
     }
   }
 
-  // 3. GOOGLE ACCOUNT SELECTOR (LOGIN / CREATE AUTOMATICALLY)
+  // 3. GOOGLE AUTH (STRICT CHECK)
   void _handleGoogleLogin() {
     showModalBottomSheet(
       context: context,
@@ -101,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,58 +113,41 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   children: const [
                     Icon(Icons.g_mobiledata, size: 36, color: Colors.blue),
                     SizedBox(width: 8),
-                    Text('Choose or Create Google Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('Select Google Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ],
                 ),
-                const SizedBox(height: 4),
-                const Text('Data will be synced and saved automatically', style: TextStyle(color: Colors.grey, fontSize: 12)),
                 const SizedBox(height: 16),
                 const Divider(height: 1),
 
-                // Akun Terdaftar 1
+                // Registered Account 1
                 ListTile(
                   leading: const CircleAvatar(
                     backgroundColor: Color(0xFF233B2B),
-                    child: Text('F', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: Text('F', style: TextStyle(color: Colors.white)),
                   ),
-                  title: const Text('Faiz', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  subtitle: const Text('faiz.user@gmail.com', style: TextStyle(fontSize: 12)),
+                  title: const Text('Faiz', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('faiz.user@gmail.com (Registered)'),
                   onTap: () {
-                    UserSession().login(
-                      UserAccount(
-                        id: 'goog_1',
-                        name: 'Faiz',
-                        email: 'faiz.user@gmail.com',
-                        authType: 'google',
-                        avatarUrl: 'https://i.pravatar.cc/300?img=12',
-                      ),
-                    );
                     Navigator.pop(context);
+                    UserSession().login('faiz.user@gmail.com');
                     _navigateToHome();
                   },
                 ),
                 const Divider(height: 1),
 
-                // Akun Baru 2 (Otomatis dibuat jika belum ada)
+                // Unregistered Account 2
                 ListTile(
                   leading: const CircleAvatar(
-                    backgroundColor: Colors.orange,
-                    child: Text('A', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    backgroundColor: Colors.grey,
+                    child: Text('A', style: TextStyle(color: Colors.white)),
                   ),
-                  title: const Text('Aqiel Studio', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  subtitle: const Text('aqiel.dev@gmail.com (Create new)', style: TextStyle(fontSize: 12)),
+                  title: const Text('New Device User'),
+                  subtitle: const Text('new.user@gmail.com (Not Registered)'),
                   onTap: () {
-                    UserSession().login(
-                      UserAccount(
-                        id: 'goog_2',
-                        name: 'Aqiel Studio',
-                        email: 'aqiel.dev@gmail.com',
-                        authType: 'google',
-                        avatarUrl: 'https://i.pravatar.cc/300?img=33',
-                      ),
-                    );
                     Navigator.pop(context);
-                    _navigateToHome();
+                    if (!UserSession().userExists('new.user@gmail.com')) {
+                      _showAccountNotFoundDialog('new.user@gmail.com', 'New Device User', 'google');
+                    }
                   },
                 ),
               ],
@@ -172,62 +158,44 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  // 4. APPLE SIGN-IN
+  // 4. APPLE AUTH (STRICT CHECK)
   void _handleAppleLogin() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.apple, size: 48, color: Colors.black),
-                const SizedBox(height: 12),
-                const Text('Sign in with Apple ID', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                const Text('Sync posts, saved items, and cart to faiz.apple@icloud.com', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 12)),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: const Icon(Icons.fingerprint, color: Colors.white),
-                    label: const Text('Continue with Face ID / Passcode', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    onPressed: () {
-                      UserSession().login(
-                        UserAccount(
-                          id: 'apple_1',
-                          name: 'Faiz (Apple)',
-                          email: 'faiz.apple@icloud.com',
-                          authType: 'apple',
-                          avatarUrl: 'https://i.pravatar.cc/300?img=60',
-                        ),
-                      );
-                      Navigator.pop(context);
-                      _navigateToHome();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    const appleEmail = 'faiz.apple@icloud.com';
+    if (UserSession().userExists(appleEmail)) {
+      UserSession().login(appleEmail);
+      _navigateToHome();
+    } else {
+      _showAccountNotFoundDialog(appleEmail, 'Faiz (Apple)', 'apple');
+    }
   }
 
-  void _showSnackBar(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+  // DIALOG FOR UNREGISTERED GOOGLE/APPLE ACCOUNTS
+  void _showAccountNotFoundDialog(String email, String name, String authType) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Account Not Found'),
+        content: Text('No account associated with "$email". Would you like to create one now?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF233B2B)),
+            onPressed: () {
+              Navigator.pop(context);
+              UserSession().registerAccount(
+                name: name,
+                email: email,
+                authType: authType,
+              );
+              _navigateToHome();
+            },
+            child: const Text('Create Account', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -251,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 const Text('Kebunku', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF233B2B))),
                 const SizedBox(height: 20),
 
-                // TAB SWITCHER (Sign In / Create Account)
+                // TAB SWITCHER
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
@@ -275,13 +243,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
                 const SizedBox(height: 20),
 
-                // TAB CONTENTS
                 SizedBox(
-                  height: 260,
+                  height: 250,
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      // Form Sign In
+                      // SIGN IN FORM
                       Column(
                         children: [
                           TextField(
@@ -295,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           const SizedBox(height: 12),
                           TextField(
                             controller: _loginPasswordController,
-                            obscureText: !_isPasswordVisible,
+                            obscureText: true,
                             decoration: InputDecoration(
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
@@ -318,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ],
                       ),
 
-                      // Form Create Account
+                      // CREATE ACCOUNT FORM
                       Column(
                         children: [
                           TextField(
@@ -341,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           const SizedBox(height: 10),
                           TextField(
                             controller: _signUpPasswordController,
-                            obscureText: !_isPasswordVisible,
+                            obscureText: true,
                             decoration: InputDecoration(
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
@@ -377,7 +344,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 ),
                 const SizedBox(height: 16),
 
-                // Opsi Google & Apple Login
                 Row(
                   children: [
                     Expanded(

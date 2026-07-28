@@ -7,7 +7,6 @@ class UserAccount {
   final String authType; // 'google', 'apple', 'email'
   final String avatarUrl;
 
-  // Data tersimpan khusus per akun
   List<Map<String, dynamic>> userPosts;
   List<Map<String, dynamic>> savedItems;
   List<Map<String, dynamic>> cartItems;
@@ -31,7 +30,7 @@ class UserSession extends ChangeNotifier {
   factory UserSession() => _instance;
   UserSession._internal();
 
-  // Database sementara di memori aplikasi
+  // In-memory mock database for registered users
   final Map<String, UserAccount> _registeredUsers = {
     'faiz.user@gmail.com': UserAccount(
       id: 'usr_1',
@@ -42,55 +41,59 @@ class UserSession extends ChangeNotifier {
       userPosts: [
         {'title': 'Fresh Organic Tomatoes', 'price': '15000', 'description': 'Harvested today'}
       ],
-      savedItems: [],
-      cartItems: [],
     ),
   };
 
   UserAccount? _currentUser;
-
   UserAccount? get currentUser => _currentUser;
 
-  // Login / Switch Account
-  void login(UserAccount account) {
-    if (!_registeredUsers.containsKey(account.email)) {
-      _registeredUsers[account.email] = account;
-    }
-    _currentUser = _registeredUsers[account.email];
-    notifyListeners();
+  // Check if an account exists
+  bool userExists(String email) {
+    return _registeredUsers.containsKey(email.toLowerCase());
   }
 
-  // Register Baru (Email / Username / Password)
-  bool registerWithEmail({
+  // Attempt login for an existing account
+  bool login(String email) {
+    final key = email.toLowerCase();
+    if (_registeredUsers.containsKey(key)) {
+      _currentUser = _registeredUsers[key];
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  // Register a new account (Email, Google, or Apple)
+  bool registerAccount({
     required String name,
     required String email,
-    required String password,
+    required String authType,
+    String? avatarUrl,
   }) {
-    if (_registeredUsers.containsKey(email)) {
-      return false; // Email sudah terdaftar
+    final key = email.toLowerCase();
+    if (_registeredUsers.containsKey(key)) {
+      return false; // Already registered
     }
 
     final newAcc = UserAccount(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
       email: email,
-      authType: 'email',
-      avatarUrl: 'https://i.pravatar.cc/300?img=${name.length + 5}',
+      authType: authType,
+      avatarUrl: avatarUrl ?? 'https://i.pravatar.cc/300?img=${key.length % 70}',
     );
 
-    _registeredUsers[email] = newAcc;
+    _registeredUsers[key] = newAcc;
     _currentUser = newAcc;
     notifyListeners();
     return true;
   }
 
-  // Logout
   void logout() {
     _currentUser = null;
     notifyListeners();
   }
 
-  // Tambah Post ke Akun Aktif
   void addPost(Map<String, dynamic> post) {
     if (_currentUser != null) {
       _currentUser!.userPosts.insert(0, post);
