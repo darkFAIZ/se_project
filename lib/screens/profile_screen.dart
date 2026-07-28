@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-// Shared global list notifier for user posts
-final ValueNotifier<List<Map<String, dynamic>>> userPostsNotifier = ValueNotifier([]);
+import '../models/user_session.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -27,10 +26,18 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 2);
+    
+    // Listen perubahan pada UserSession (misal saat tambah post/switch account)
+    UserSession().addListener(_onSessionChanged);
+  }
+
+  void _onSessionChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    UserSession().removeListener(_onSessionChanged);
     _tabController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
@@ -158,15 +165,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         ),
                         onPressed: () {
                           if (_titleController.text.isNotEmpty && _priceController.text.isNotEmpty) {
-                            userPostsNotifier.value = [
-                              {
-                                'title': _titleController.text,
-                                'price': _priceController.text,
-                                'description': _descriptionController.text,
-                                'imageFile': _selectedImage,
-                              },
-                              ...userPostsNotifier.value,
-                            ];
+                            // SIMPAN PER POST KE USER YANG SEDANG LOGIN
+                            UserSession().addPost({
+                              'title': _titleController.text,
+                              'price': _priceController.text,
+                              'description': _descriptionController.text,
+                              'imageFile': _selectedImage,
+                            });
 
                             _titleController.clear();
                             _priceController.clear();
@@ -195,6 +200,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    // AMBIL DATA USER AKTIF DARI SESSION
+    final currentUser = UserSession().currentUser;
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF3F7EC),
@@ -254,10 +262,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ),
               const Spacer(),
               const Divider(height: 1),
+              
+              // FITUR LOGOUT AKTIF
               ListTile(
                 leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
                 title: const Text('Logout', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  UserSession().logout();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
               ),
             ],
           ),
@@ -288,25 +305,33 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
             const SizedBox(height: 12),
 
+            // DINAMIS: PROFILE HEADER DARI USER SESSION
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 46,
-                    backgroundImage: NetworkImage('https://i.pravatar.cc/300?img=12'),
+                    backgroundImage: NetworkImage(
+                      currentUser?.avatarUrl ?? 'https://i.pravatar.cc/300?img=12',
+                    ),
                   ),
                   const SizedBox(width: 18),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          'Mr. Aqiel',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                          currentUser?.name ?? 'Guest User',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
-                        SizedBox(height: 6),
+                        const SizedBox(height: 2),
                         Text(
+                          currentUser?.email ?? 'No email',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
                           'Did you know ?\nprotein on the fishes is going to your brain not to your muscle.',
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87, height: 1.3),
                         ),
@@ -343,22 +368,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 children: [
                   _buildEmptyState('No favorites yet.'),
                   _buildEmptyState('No saved items yet.'),
-                  ValueListenableBuilder<List<Map<String, dynamic>>>(
-                    valueListenable: userPostsNotifier,
-                    builder: (context, posts, child) {
-                      if (posts.isEmpty) {
-                        return _buildEmptyState('No posts yet. Tap + to upload an item to sell!');
-                      }
-                      return _buildUserPostsGrid(posts);
-                    },
-                  ),
+                  
+                  // DINAMIS: POSTS KHUSUS MILIK USER AKTIF
+                  _buildPostsTab(currentUser?.userPosts ?? []),
                 ],
               ),
             ),
           ],
         ),
       ),
-      // bottomNavigationBar DIHAPUS DARI SINI
     );
   }
 
@@ -369,6 +387,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
       ),
     );
+  }
+
+  Widget _buildPostsTab(List<Map<String, dynamic>> posts) {
+    if (posts.isEmpty) {
+      return _buildEmptyState('No posts yet. Tap + to upload an item to sell!');
+    }
+    return _buildUserPostsGrid(posts);
   }
 
   Widget _buildUserPostsGrid(List<Map<String, dynamic>> posts) {
