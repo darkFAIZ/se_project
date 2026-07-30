@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'shop_detail_screen.dart';
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
@@ -143,6 +143,7 @@ class DiscoverScreen extends StatelessWidget {
                   children: [
                     // Farmer Shop Card 1: Beras-Jaya
                     _buildFarmerShopCard(
+                      context: context,
                       imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800',
                       shopName: 'Beras-Jaya',
                       rating: '4.8',
@@ -155,6 +156,7 @@ class DiscoverScreen extends StatelessWidget {
 
                     // Farmer Shop Card 2: Fresh-Fruit
                     _buildFarmerShopCard(
+                      context: context,
                       imageUrl: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=800',
                       shopName: 'Fresh-Fruit',
                       rating: '4.9',
@@ -167,6 +169,7 @@ class DiscoverScreen extends StatelessWidget {
 
                     // Farmer Shop Card 3: Sayurku
                     _buildFarmerShopCard(
+                      context: context,
                       imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800',
                       shopName: 'Sayurku',
                       rating: '4.7',
@@ -182,7 +185,6 @@ class DiscoverScreen extends StatelessWidget {
           ],
         ),
       ),
-      // bottomNavigationBar dihapus seluruhnya agar dihandle MainShellScreen
     );
   }
 
@@ -256,8 +258,23 @@ class DiscoverScreen extends StatelessWidget {
     );
   }
 
+  // Helper to open shop detail screen
+// Helper to open shop detail screen
+  static void _navigateToShop(BuildContext context, String shopName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShopDetailScreen(
+          // Pass a Map with the 'name' key so it matches what ShopDetailScreen expects
+          shop: {'name': shopName}, 
+        ),
+      ),
+    );
+  }
+
   // Farmer Shop Card Widget
   static Widget _buildFarmerShopCard({
+    required BuildContext context,
     required String imageUrl,
     required String shopName,
     required String rating,
@@ -368,7 +385,7 @@ class DiscoverScreen extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _navigateToShop(context, shopName),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF223829), // Dark forest green
                 shape: RoundedRectangleBorder(
