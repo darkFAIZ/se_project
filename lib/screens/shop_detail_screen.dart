@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../models/user_session.dart';
 
 class ShopDetailScreen extends StatefulWidget {
   final Map<String, dynamic> shop;
@@ -147,6 +147,18 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                               backgroundColor: const Color(0xFF1B4D3E),
                             ),
                             onPressed: () {
+                              final cartProduct = {
+                                ...product,
+                                'title': product['name'] ?? product['title'] ?? 'Product',
+                                'imageUrl': product['imageUrl'] ?? product['image'],
+                                'category': product['category'] ?? widget.shop['name'] ?? 'Shop',
+                                'farmer': product['farmer'] ?? widget.shop['name'] ?? 'Farmer',
+                                'origin': product['origin'] ?? 'Indonesia',
+                                'stock': product['stock'] ?? 'Available',
+                                'description': product['description'] ?? 'Fresh produce from this shop.',
+                              };
+
+                              UserSession().addToCart(cartProduct);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Added ${product['name']} to cart!')),
                               );
