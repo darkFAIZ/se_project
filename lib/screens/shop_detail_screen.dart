@@ -179,4 +179,4 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
   }
 }
 
-//the problem now is if we add the product to the cart from here its not automatically updated the cart page!!!
+//the problem when we put it into saved its not saved in the profile not like on the homepage.
