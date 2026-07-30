@@ -128,6 +128,15 @@ class UserSession extends ChangeNotifier {
   }
 
   // --- CART MANAGEMENT ---
+  
+    // --- CART MANAGEMENT ---
+
+  void clearCart() {
+    if (_currentUser != null) {
+      _currentUser!.cartItems.clear(); // Or _currentUser!._cartItems.clear() if using UnmodifiableListView
+      notifyListeners();
+    }
+  }
   void addToCart(Map<String, dynamic> product) {
     if (_currentUser == null) return;
     final existingIndex = _currentUser!.cartItems.indexWhere((item) => item.product['title'] == product['title']);

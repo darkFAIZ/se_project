@@ -47,8 +47,8 @@ class _CartScreenState extends State<CartScreen> {
             onPressed: () {
               final user = UserSession().currentUser;
               if (user != null) {
-                user.cartItems.clear();
-                UserSession().notifyListeners();
+                UserSession().clearCart();
+                Navigator.pop(context);
               }
               Navigator.pop(context);
             },
