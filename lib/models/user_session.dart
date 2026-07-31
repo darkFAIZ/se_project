@@ -107,15 +107,41 @@ class UserSession extends ChangeNotifier {
   // --- SAVED ITEMS MANAGEMENT ---
   bool isSaved(Map<String, dynamic> product) {
     if (_currentUser == null) return false;
-    return _currentUser!.savedItems.any((item) => item['title'] == product['title']);
+
+    final productTitle = (product['title'] ?? product['name'] ?? '').toString().trim();
+    if (productTitle.isEmpty) return false;
+
+    return _currentUser!.savedItems.any((item) {
+      final savedTitle = (item['title'] ?? item['name'] ?? '').toString().trim();
+      return savedTitle == productTitle;
+    });
   }
 
   void toggleSaveProduct(Map<String, dynamic> product) {
     if (_currentUser == null) return;
-    if (isSaved(product)) {
-      _currentUser!.savedItems.removeWhere((item) => item['title'] == product['title']);
+
+    final normalizedProduct = {
+      ...product,
+      'title': (product['title'] ?? product['name'] ?? 'Product').toString(),
+      'name': (product['name'] ?? product['title'] ?? 'Product').toString(),
+      'imageUrl': product['imageUrl'] ?? product['image'] ?? '',
+      'category': product['category'] ?? product['subCategory'] ?? 'General',
+      'origin': product['origin'] ?? 'BOGOR',
+      'price': product['price'] ?? 0,
+      'farmer': product['farmer'] ?? 'Pak Tani',
+      'stock': product['stock'] ?? 'Available',
+      'description': product['description'] ?? 'Fresh product',
+    };
+
+    final productTitle = (normalizedProduct['title'] ?? normalizedProduct['name'] ?? '').toString();
+
+    if (isSaved(normalizedProduct)) {
+      _currentUser!.savedItems.removeWhere((item) {
+        final savedTitle = (item['title'] ?? item['name'] ?? '').toString();
+        return savedTitle == productTitle;
+      });
     } else {
-      _currentUser!.savedItems.add(product);
+      _currentUser!.savedItems.add(normalizedProduct);
     }
     notifyListeners();
   }

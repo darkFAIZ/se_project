@@ -93,6 +93,19 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final product = products[index];
+                final productForSession = {
+                  ...product,
+                  'title': product['name'] ?? product['title'] ?? 'Product',
+                  'name': product['name'] ?? product['title'] ?? 'Product',
+                  'imageUrl': product['imageUrl'] ?? product['image'] ?? '',
+                  'category': product['category'] ?? 'Shop',
+                  'farmer': product['farmer'] ?? widget.shop['name'] ?? 'Farmer',
+                  'origin': product['origin'] ?? 'Indonesia',
+                  'stock': product['stock'] ?? 'Available',
+                  'description': product['description'] ?? 'Fresh produce from this shop.',
+                };
+                final isSaved = UserSession().isSaved(productForSession);
+
                 return Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 2,
@@ -117,12 +130,12 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                               right: 4,
                               child: IconButton(
                                 icon: Icon(
-                                  product['isSaved'] ? Icons.favorite : Icons.favorite_border,
-                                  color: product['isSaved'] ? Colors.red : Colors.grey,
+                                  isSaved ? Icons.favorite : Icons.favorite_border,
+                                  color: isSaved ? Colors.red : Colors.grey,
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    product['isSaved'] = !product['isSaved'];
+                                    UserSession().toggleSaveProduct(productForSession);
                                   });
                                 },
                               ),
@@ -148,7 +161,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                             ),
                             onPressed: () {
                               final cartProduct = {
-                                ...product,
+                                ...productForSession,
                                 'title': product['name'] ?? product['title'] ?? 'Product',
                                 'imageUrl': product['imageUrl'] ?? product['image'],
                                 'category': product['category'] ?? widget.shop['name'] ?? 'Shop',
@@ -179,4 +192,4 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
   }
 }
 
-//the problem when we put it into saved its not saved in the profile not like on the homepage.
+//the problem when we put it into saved its not saved in the profile not like on the homepage. 
