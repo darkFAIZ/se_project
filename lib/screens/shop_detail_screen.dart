@@ -14,6 +14,18 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
   // Sample products for the shop
   late List<Map<String, dynamic>> products;
 
+  double _normalizePrice(dynamic rawPrice) {
+    final value = (rawPrice is num)
+        ? rawPrice.toDouble()
+        : double.tryParse(rawPrice.toString()) ?? 0;
+
+    if (value <= 0) return 0;
+    if (value >= 1000) {
+      return value / 1000;
+    }
+    return value;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -149,7 +161,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                           maxLines: 1,
                         ),
                         Text(
-                          "Rp ${product['price']} / ${product['unit']}",
+                          "Rp ${_normalizePrice(product['price']).toStringAsFixed(0)} k / ${product['unit']}",
                           style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
                         ),
                         const Spacer(),
@@ -169,6 +181,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                                 'origin': product['origin'] ?? 'Indonesia',
                                 'stock': product['stock'] ?? 'Available',
                                 'description': product['description'] ?? 'Fresh produce from this shop.',
+                                'price': _normalizePrice(product['price']),
                               };
 
                               UserSession().addToCart(cartProduct);
