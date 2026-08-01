@@ -1,17 +1,38 @@
-# se_project
+# Kebunku Marketplace
 
-A new Flutter project.
+This project contains:
+- Flutter app in `lib/`
+- Python FastAPI backend in `backend/`
 
-## Getting Started
+## Backend setup
 
-This project is a starting point for a Flutter application.
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Firebase setup
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. Create a Firebase project.
+2. Download your service account JSON.
+3. Put the relevant values into a `.env` file based on `.env.example`.
+4. Make sure Firestore is enabled.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## API endpoints
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/products`
+- `GET /api/products/{product_id}`
+- `GET /api/cart/{user_id}`
+- `POST /api/cart/add`
+- `POST /api/cart/clear`
+- `POST /api/orders/checkout`
+- `GET /api/orders/user/{user_id}`
+
+## Notes
+
+This backend is configured for Firebase Firestore integration and is ready for expansion with QRIS and real payment services.

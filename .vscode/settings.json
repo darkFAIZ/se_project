@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "c:/Users/perwi/Documents/Hackathon/se_project/backend/.venv/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "c:/Users/perwi/Documents/Hackathon/se_project/backend"
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
+}
