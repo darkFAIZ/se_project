@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user_session.dart';
+import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,6 +14,25 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
   String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    UserSession().addListener(_onSessionChanged);
+  }
+
+  @override
+  void dispose() {
+    UserSession().removeListener(_onSessionChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSessionChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   // Full category list with icons
   final List<Map<String, dynamic>> _categories = const [
@@ -116,12 +136,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   ];
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
   void _navigateToDetail(Map<String, dynamic> product) {
     Navigator.push(
       context,
@@ -134,6 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final currentUser = UserSession().currentUser;
+    final latestOrder = UserSession().orders.isNotEmpty ? UserSession().orders.first : null;
 
     // Filtering logic based on category tab & search query input
     final filteredProducts = _allProducts.where((product) {
@@ -390,7 +405,70 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // 4. CATEGORIES HORIZONTAL SELECTOR
+            // 4. ORDER TRACKING SHORTCUT
+            if (latestOrder != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderTrackingScreen(order: latestOrder),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF233B2B),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF233B2B).withOpacity(0.22),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 28),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Track your order',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  latestOrder['status'] as String? ?? 'Packed',
+                                  style: const TextStyle(
+                                    color: Color(0xFFDDEAD9),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // 5. CATEGORIES HORIZONTAL SELECTOR
             SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
