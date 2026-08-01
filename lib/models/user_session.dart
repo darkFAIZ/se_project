@@ -37,6 +37,9 @@ class UserSession extends ChangeNotifier {
   factory UserSession() => _instance;
   UserSession._internal();
 
+  final List<Map<String, dynamic>> _orders = [];
+  List<Map<String, dynamic>> get orders => List.unmodifiable(_orders);
+
   final Map<String, UserAccount> _registeredUsers = {
     'faiz.user@gmail.com': UserAccount(
       id: 'usr_1',
@@ -193,5 +196,13 @@ class UserSession extends ChangeNotifier {
           : double.tryParse(item.product['price'].toString()) ?? 0;
       return sum + (price * item.quantity);
     });
+  }
+
+  void placeOrder(Map<String, dynamic> order) {
+    _orders.insert(0, order);
+    if (_currentUser != null) {
+      _currentUser!.cartItems.clear();
+    }
+    notifyListeners();
   }
 }

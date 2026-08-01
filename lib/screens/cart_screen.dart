@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/user_session.dart';
+import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
 
 class CartScreen extends StatefulWidget {
@@ -308,10 +309,28 @@ class _CartScreenState extends State<CartScreen> {
                               elevation: 0,
                             ),
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Order placed successfully! Thank you.'),
-                                  backgroundColor: Color(0xFF233B2B),
+                              if (cartItems.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Your cart is empty.'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CheckoutScreen(
+                                    cartItems: cartItems.map((item) {
+                                      final product = item.product;
+                                      return {
+                                        ...product,
+                                        'quantity': item.quantity,
+                                      };
+                                    }).toList(),
+                                  ),
                                 ),
                               );
                             },
