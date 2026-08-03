@@ -1,55 +1,82 @@
-from fastapi import APIRouter
+from datetime import datetime
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+from app.services.firebase_service import get_db
 
 router = APIRouter(prefix="/api/products", tags=["products"])
+db = get_db()
 
-PRODUCTS = [
-    {
-        "id": "p1",
-        "title": "Broccoli",
-        "price": 20,
-        "category": "Vegetables",
-        "origin": "BOGOR",
-        "farmer": "Pak Tani",
-        "stock": "50.0 kg",
-        "description": "Freshly harvested organic broccoli.",
-        "imageUrl": "https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?q=80&w=600",
-    },
-    {
-        "id": "p2",
-        "title": "Fresh Carrots",
-        "price": 12,
-        "category": "Vegetables",
-        "origin": "BANDUNG",
-        "farmer": "Bu Sri",
-        "stock": "30.0 kg",
-        "description": "Sweet and crisp organic carrots.",
-        "imageUrl": "https://images.unsplash.com/photo-1598170845058-12ef4a457939?q=80&w=600",
-    },
-    {
-        "id": "p3",
-        "title": "Red Fuji Apples",
-        "price": 25,
-        "category": "Fruits",
-        "origin": "MALANG",
-        "farmer": "Pak Budi",
-        "stock": "45.0 kg",
-        "description": "Juicy Fuji apples from Malang.",
-        "imageUrl": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=600",
-    },
-]
+
+class ProductPayload(BaseModel):
+    userId: str
+    title: str
+    price: float
+    category: str
+    subCategory: str | None = None
+    farmer: str | None = None
+    origin: str | None = None
+    stock: str | None = None
+    description: str | None = None
+    imageUrl: str | None = None
+
+
+def serialize_product(doc):
+    data = doc.to_dict()
+    data["id"] = doc.id
+    return data
 
 
 @router.get("")
 async def get_products():
+    products = [serialize_product(doc) for doc in db.collection("products").stream()]
+    return {"success": True, "products": products}
+
+
+@router.get("/user/{user_id}")
+async def get_user_products(user_id: str):
+    user_ref = db.collection("users").document(user_id.lower())
+    products = [serialize_product(doc) for doc in user_ref.collection("products").stream()]
+    return {"success": True, "products": products}
+
+
+@router.post("")
+async def create_product(payload: ProductPayload):
+    if not payload.userId.strip():
+        raise HTTPException(status_code=400, detail="User ID is required")
+    if not payload.title.strip():
+        raise HTTPException(status_code=400, detail="Product title is required")
+
+    product_id = f"{payload.userId.lower()}-{int(datetime.utcnow().timestamp() * 1000)}"
+    product_data = {
+        "id": product_id,
+        "userId": payload.userId.lower(),
+        "title": payload.title.strip(),
+        "price": payload.price,
+        "category": payload.category.strip(),
+        "subCategory": payload.subCategory or "Fresh Harvest",
+        "farmer": payload.farmer or "Pak Tani",
+        "origin": (payload.origin or "BOGOR").upper(),
+        "stock": payload.stock or "10.0 kg",
+        "description": payload.description or "Fresh harvest directly from farm.",
+        "imageUrl": payload.imageUrl or "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=600",
+        "createdAt": datetime.utcnow().isoformat(),
+    }
+
+    db.collection("products").document(product_id).set(product_data)
+    db.collection("users").document(payload.userId.lower()).collection("products").document(product_id).set(product_data)
+
     return {
         "success": True,
-        "products": PRODUCTS,
+        "message": "Product uploaded successfully",
+        "product": product_data,
     }
 
 
 @router.get("/{product_id}")
 async def get_product_by_id(product_id: str):
-    product = next((item for item in PRODUCTS if item["id"] == product_id), None)
-    if product is None:
+    product_doc = db.collection("products").document(product_id).get()
+    if not product_doc.exists:
         return {"success": False, "message": "Product not found"}
-    return {"success": True, "product": product}
+    return {"success": True, "product": serialize_product(product_doc)}

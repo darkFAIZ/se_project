@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'models/user_session.dart';
 import 'screens/login_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await UserSession().loadSession();
   runApp(const TerraKarsaApp());
 }
 
@@ -11,10 +14,14 @@ class TerraKarsaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Green Farm',
+      title: 'Kebunku',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green, useMaterial3: true),
-      home: const LoginScreen(), // FIXED: Starts on the Sign-Up screen
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF8F9F5),
+      ),
+      home: const LoginScreen(),
     );
   }
 }

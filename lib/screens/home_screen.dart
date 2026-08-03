@@ -149,12 +149,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final currentUser = UserSession().currentUser;
     final latestOrder = UserSession().orders.isNotEmpty ? UserSession().orders.first : null;
+    final userPosts = currentUser?.userPosts ?? [];
+    final availableProducts = <Map<String, dynamic>>[..._allProducts, ...userPosts];
 
-    // Filtering logic based on category tab & search query input
-    final filteredProducts = _allProducts.where((product) {
+    final filteredProducts = availableProducts.where((product) {
       final matchesCategory = _selectedCategory == 'All' ||
-          product['category'].toString().toLowerCase() == _selectedCategory.toLowerCase();
-      final matchesSearch = product['title']
+          (product['category'] ?? '').toString().toLowerCase() == _selectedCategory.toLowerCase();
+      final matchesSearch = (product['title'] ?? product['name'] ?? '')
           .toString()
           .toLowerCase()
           .contains(_searchQuery.toLowerCase());

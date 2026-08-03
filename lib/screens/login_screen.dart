@@ -94,109 +94,28 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
-  // 3. GOOGLE AUTH (STRICT CHECK)
-  void _handleGoogleLogin() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: const [
-                    Icon(Icons.g_mobiledata, size: 36, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text('Select Google Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(height: 1),
+  // 3. GOOGLE AUTH USING THE GOOGLE SIGN-IN SDK
+  Future<void> _handleGoogleLogin() async {
+    final ok = await UserSession().signInWithGoogle();
+    if (!mounted) return;
 
-                // Registered Account 1
-                ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Color(0xFF233B2B),
-                    child: Text('F', style: TextStyle(color: Colors.white)),
-                  ),
-                  title: const Text('Faiz', style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text('faiz.user@gmail.com (Registered)'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    UserSession().login('faiz.user@gmail.com');
-                    _navigateToHome();
-                  },
-                ),
-                const Divider(height: 1),
-
-                // Unregistered Account 2
-                ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Colors.grey,
-                    child: Text('A', style: TextStyle(color: Colors.white)),
-                  ),
-                  title: const Text('New Device User'),
-                  subtitle: const Text('new.user@gmail.com (Not Registered)'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    if (!UserSession().userExists('new.user@gmail.com')) {
-                      _showAccountNotFoundDialog('new.user@gmail.com', 'New Device User', 'google');
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // 4. APPLE AUTH (STRICT CHECK)
-  void _handleAppleLogin() {
-    const appleEmail = 'faiz.apple@icloud.com';
-    if (UserSession().userExists(appleEmail)) {
-      UserSession().login(appleEmail);
+    if (ok) {
       _navigateToHome();
     } else {
-      _showAccountNotFoundDialog(appleEmail, 'Faiz (Apple)', 'apple');
+      _showSnackBar('Google sign-in was cancelled or unavailable.');
     }
   }
 
-  // DIALOG FOR UNREGISTERED GOOGLE/APPLE ACCOUNTS
-  void _showAccountNotFoundDialog(String email, String name, String authType) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Account Not Found'),
-        content: Text('No account associated with "$email". Would you like to create one now?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF233B2B)),
-            onPressed: () {
-              Navigator.pop(context);
-              UserSession().registerAccount(
-                name: name,
-                email: email,
-                authType: authType,
-              );
-              _navigateToHome();
-            },
-            child: const Text('Create Account', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+  // 4. APPLE AUTH USING THE SIGN-IN WITH APPLE SDK
+  Future<void> _handleAppleLogin() async {
+    final ok = await UserSession().signInWithApple();
+    if (!mounted) return;
+
+    if (ok) {
+      _navigateToHome();
+    } else {
+      _showSnackBar('Apple sign-in is unavailable on this device or configuration.');
+    }
   }
 
   @override
@@ -217,6 +136,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 ),
                 const SizedBox(height: 12),
                 const Text('Kebunku', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF233B2B))),
+                const SizedBox(height: 6),
+                const Text(
+                  'Secure farm marketplace access',
+                  style: TextStyle(fontSize: 13, color: Colors.grey, letterSpacing: 0.3),
+                ),
                 const SizedBox(height: 20),
 
                 // TAB SWITCHER
@@ -351,7 +275,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
                         icon: const Icon(Icons.g_mobiledata, size: 28, color: Colors.redAccent),
                         label: const Text('Google', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-                        onPressed: _handleGoogleLogin,
+                        onPressed: () async {
+                          await _handleGoogleLogin();
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -363,7 +289,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                         icon: const Icon(Icons.apple, size: 22, color: Colors.white),
                         label: const Text('Apple', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        onPressed: _handleAppleLogin,
+                        onPressed: () async {
+                          await _handleAppleLogin();
+                        },
                       ),
                     ),
                   ],

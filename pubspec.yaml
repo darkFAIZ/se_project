@@ -31,6 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.1.2 # Adds gallery/camera image picking capability
+  shared_preferences: ^2.3.2
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
