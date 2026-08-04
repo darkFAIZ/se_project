@@ -23,8 +23,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final isSaved = UserSession().isSaved(product);
 
     // Image handling for File vs Network URL vs Fallback
-    final File? imageFile = product['imageFile'];
-    final String imageUrl = product['imageUrl'] ?? '';
+    final String imagePath = (product['imagePath'] ?? '').toString();
+    final File? imageFile = product['imageFile'] ?? (imagePath.isNotEmpty ? File(imagePath) : null);
+    final String imageUrl = imagePath.isNotEmpty ? imagePath : (product['imageUrl'] ?? '');
 
     final double price = (product['price'] is num)
         ? (product['price'] as num).toDouble()
@@ -49,14 +50,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           height: 320,
                           width: double.infinity,
                           color: Colors.grey[200],
-                          child: imageFile != null
+                          child: imageFile != null && imageFile.existsSync()
                               ? Image.file(
                                   imageFile,
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                   height: 320,
                                 )
-                              : (imageUrl.isNotEmpty
+                              : (imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.scheme != null
                                   ? Image.network(
                                       imageUrl,
                                       fit: BoxFit.cover,

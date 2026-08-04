@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -61,6 +62,13 @@ class UserSession extends ChangeNotifier {
       normalized[entry.key] = entry.value;
     }
 
+    final imageFile = product['imageFile'];
+    if (imageFile is File) {
+      normalized['imagePath'] = imageFile.path;
+    } else if (product['imagePath'] != null) {
+      normalized['imagePath'] = product['imagePath'].toString();
+    }
+
     normalized['title'] = (product['title'] ?? product['name'] ?? 'Product').toString();
     normalized['name'] = (product['name'] ?? product['title'] ?? normalized['title']).toString();
     normalized['imageUrl'] = (product['imageUrl'] ?? product['image'] ?? '').toString();
@@ -71,7 +79,9 @@ class UserSession extends ChangeNotifier {
     normalized['stock'] = (product['stock'] ?? 'Available').toString();
     normalized['description'] = (product['description'] ?? 'Fresh product').toString();
 
-    if (normalized['imageUrl'].toString().trim().isEmpty) {
+    if (normalized['imagePath'] != null && normalized['imagePath'].toString().trim().isNotEmpty) {
+      normalized['imageUrl'] = normalized['imagePath'].toString();
+    } else if (normalized['imageUrl'].toString().trim().isEmpty) {
       normalized['imageUrl'] = 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=600';
     }
 

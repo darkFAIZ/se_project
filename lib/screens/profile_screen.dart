@@ -283,9 +283,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                 ? 'Fresh harvest directly from farm.'
                                 : _descriptionController.text.trim(),
                             'imageFile': _selectedImage,
+                            'imagePath': _selectedImage?.path,
                             'imageUrl': _selectedImage == null
                                 ? 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=600'
-                                : '',
+                                : _selectedImage!.path,
                           };
 
                           UserSession().addPost(newProduct);

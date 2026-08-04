@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     if (ok) {
       _navigateToHome();
     } else {
-      _showSnackBar('Google sign-in was cancelled or unavailable.');
+      _showSnackBar('Google sign-in is not configured for this app yet. Add the Android/iOS Google configuration and google-services.json before using Google login.');
     }
   }
 
