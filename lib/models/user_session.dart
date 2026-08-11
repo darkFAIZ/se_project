@@ -19,7 +19,8 @@ class UserAccount {
   final String name;
   final String email;
   final String authType;
-  final String avatarUrl;
+  String avatarUrl;
+  String? avatarPath;
 
   List<Map<String, dynamic>> userPosts;
   List<Map<String, dynamic>> savedItems;
@@ -31,6 +32,7 @@ class UserAccount {
     required this.email,
     required this.authType,
     required this.avatarUrl,
+    this.avatarPath,
     List<Map<String, dynamic>>? userPosts,
     List<Map<String, dynamic>>? savedItems,
     List<CartItem>? cartItems,
@@ -71,7 +73,6 @@ class UserSession extends ChangeNotifier {
 
     normalized['title'] = (product['title'] ?? product['name'] ?? 'Product').toString();
     normalized['name'] = (product['name'] ?? product['title'] ?? normalized['title']).toString();
-    normalized['imageUrl'] = (product['imageUrl'] ?? product['image'] ?? '').toString();
     normalized['category'] = (product['category'] ?? product['subCategory'] ?? 'General').toString();
     normalized['origin'] = (product['origin'] ?? 'BOGOR').toString();
     normalized['price'] = product['price'] ?? 0;
@@ -79,9 +80,14 @@ class UserSession extends ChangeNotifier {
     normalized['stock'] = (product['stock'] ?? 'Available').toString();
     normalized['description'] = (product['description'] ?? 'Fresh product').toString();
 
-    if (normalized['imagePath'] != null && normalized['imagePath'].toString().trim().isNotEmpty) {
-      normalized['imageUrl'] = normalized['imagePath'].toString();
-    } else if (normalized['imageUrl'].toString().trim().isEmpty) {
+    final remoteImageUrl = (product['imageUrl'] ?? product['image'] ?? '').toString();
+    final localImagePath = (normalized['imagePath'] ?? '').toString();
+
+    if (localImagePath.trim().isNotEmpty) {
+      normalized['imageUrl'] = '';
+    } else if (remoteImageUrl.trim().isNotEmpty) {
+      normalized['imageUrl'] = remoteImageUrl;
+    } else {
       normalized['imageUrl'] = 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=600';
     }
 
@@ -95,6 +101,7 @@ class UserSession extends ChangeNotifier {
       'email': account.email,
       'authType': account.authType,
       'avatarUrl': account.avatarUrl,
+      'avatarPath': account.avatarPath,
       'userPosts': account.userPosts.map(_normalizeProductForStorage).toList(),
       'savedItems': account.savedItems.map(_normalizeProductForStorage).toList(),
       'cartItems': account.cartItems
@@ -131,6 +138,7 @@ class UserSession extends ChangeNotifier {
       email: (accountMap['email'] ?? '').toString(),
       authType: (accountMap['authType'] ?? 'email').toString(),
       avatarUrl: (accountMap['avatarUrl'] ?? 'https://i.pravatar.cc/300').toString(),
+      avatarPath: (accountMap['avatarPath'] ?? '').toString().isEmpty ? null : (accountMap['avatarPath'] ?? '').toString(),
       userPosts: userPosts,
       savedItems: savedItems,
       cartItems: cartItems,
@@ -282,6 +290,15 @@ class UserSession extends ChangeNotifier {
     } catch (_) {
       return false;
     }
+  }
+
+  void updateCurrentUserAvatar(File avatarFile) {
+    if (_currentUser == null) return;
+
+    _currentUser!.avatarPath = avatarFile.path;
+    _currentUser!.avatarUrl = '';
+    unawaited(saveSession());
+    notifyListeners();
   }
 
   void logout() {

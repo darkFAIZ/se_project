@@ -72,6 +72,38 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
+  Future<void> _pickAvatarImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final avatarFile = File(image.path);
+      UserSession().updateCurrentUserAvatar(avatarFile);
+      if (mounted) setState(() {});
+    }
+  }
+
+  Widget _buildProductImageForProfile(Map<String, dynamic> product, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    final String imagePath = (product['imagePath'] ?? '').toString();
+    final File? imageFile = product['imageFile'] is File
+        ? product['imageFile'] as File
+        : (imagePath.isNotEmpty ? File(imagePath) : null);
+    final String imageUrl = (product['imageUrl'] ?? '').toString();
+
+    if (imageFile != null && imageFile.existsSync()) {
+      return Image.file(imageFile, width: width, height: height, fit: fit);
+    }
+
+    if (imageUrl.trim().isNotEmpty && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+      return Image.network(imageUrl, width: width, height: height, fit: fit);
+    }
+
+    return Container(
+      width: width,
+      height: height,
+      color: Colors.grey[200],
+      child: const Icon(Icons.image, color: Colors.grey),
+    );
+  }
+
   // Show bottom sheet form to upload a new product
   void _showUploadProductSheet() {
     final currentUser = UserSession().currentUser;
@@ -286,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                             'imagePath': _selectedImage?.path,
                             'imageUrl': _selectedImage == null
                                 ? 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=600'
-                                : _selectedImage!.path,
+                                : '',
                           };
 
                           UserSession().addPost(newProduct);
@@ -376,12 +408,33 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundColor: const Color(0xFF233B2B),
-                      backgroundImage: NetworkImage(
-                        user?.avatarUrl ?? 'https://i.pravatar.cc/300?img=12',
-                      ),
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundColor: const Color(0xFF233B2B),
+                          backgroundImage: (user?.avatarPath != null && user!.avatarPath!.isNotEmpty && File(user.avatarPath!).existsSync())
+                              ? FileImage(File(user.avatarPath!))
+                              : (user?.avatarUrl != null && user!.avatarUrl.isNotEmpty
+                                  ? NetworkImage(user.avatarUrl)
+                                  : const NetworkImage('https://i.pravatar.cc/300?img=12')),
+                        ),
+                        Positioned(
+                          right: -4,
+                          bottom: -2,
+                          child: GestureDetector(
+                            onTap: _pickAvatarImage,
+                            child: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF233B2B),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.camera_alt, size: 15, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -511,8 +564,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       itemCount: savedItems.length,
       itemBuilder: (context, index) {
         final item = savedItems[index];
-        final File? imageFile = item['imageFile'];
-        final String imageUrl = item['imageUrl'] ?? '';
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -534,11 +585,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               child: SizedBox(
                 width: 56,
                 height: 56,
-                child: imageFile != null
-                    ? Image.file(imageFile, fit: BoxFit.cover)
-                    : (imageUrl.isNotEmpty
-                        ? Image.network(imageUrl, fit: BoxFit.cover)
-                        : Container(color: Colors.grey[200], child: const Icon(Icons.image))),
+                child: _buildProductImageForProfile(item, width: 56, height: 56, fit: BoxFit.cover),
               ),
             ),
             title: Text(
@@ -605,8 +652,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       itemCount: userPosts.length,
       itemBuilder: (context, index) {
         final post = userPosts[index];
-        final File? imageFile = post['imageFile'];
-        final String imageUrl = post['imageUrl'] ?? '';
 
         return GestureDetector(
           onTap: () {
@@ -637,11 +682,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     children: [
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                        child: imageFile != null
-                            ? Image.file(imageFile, width: double.infinity, height: double.infinity, fit: BoxFit.cover)
-                            : (imageUrl.isNotEmpty
-                                ? Image.network(imageUrl, width: double.infinity, height: double.infinity, fit: BoxFit.cover)
-                                : Container(color: Colors.grey[200], child: const Icon(Icons.image, color: Colors.grey))),
+                        child: _buildProductImageForProfile(post, width: double.infinity, height: double.infinity, fit: BoxFit.cover),
                       ),
                       Positioned(
                         top: 8,
