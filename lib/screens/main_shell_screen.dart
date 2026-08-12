@@ -5,6 +5,7 @@ import 'discover_screen.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
 
+// MainShellScreen acts as the primary layout wrapper, holding the BottomNavigationBar.
 class MainShellScreen extends StatefulWidget {
   const MainShellScreen({super.key});
 
@@ -26,6 +27,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // IndexedStack is used so screens aren't rebuilt when switching tabs (maintains state/scroll position)
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
@@ -53,6 +55,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           ),
           
           // --- CART TAB WITH LIVE COUNTER BADGE ---
+          // ListenableBuilder redraws the badge automatically when the global cart item count changes
           BottomNavigationBarItem(
             icon: ListenableBuilder(
               listenable: UserSession(),

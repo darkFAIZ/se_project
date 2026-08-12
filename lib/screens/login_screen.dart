@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/user_session.dart';
 import 'main_shell_screen.dart';
 
+// LoginScreen acts as the authentication gateway, handling Email, Google, and Apple sign-ins.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -10,11 +11,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+  // Controls the switching animation and state between the "Sign In" and "Create Account" tabs
   late TabController _tabController;
 
+  // Controllers to capture user input for the login form
   final TextEditingController _loginEmailController = TextEditingController();
   final TextEditingController _loginPasswordController = TextEditingController();
 
+  // Controllers to capture user input for the registration form
   final TextEditingController _signUpNameController = TextEditingController();
   final TextEditingController _signUpEmailController = TextEditingController();
   final TextEditingController _signUpPasswordController = TextEditingController();
@@ -22,11 +26,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
+    // Initialize the TabController with 2 tabs (Sign In, Create Account)
     _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
+    // Clean up all controllers to prevent memory leaks when this screen is destroyed
     _tabController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
@@ -36,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
+  // Helper method to transition the user to the main app interface upon successful authentication
   void _navigateToHome() {
     Navigator.pushReplacement(
       context,
@@ -43,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
+  // Helper method to display temporary feedback messages (errors or success) at the bottom of the screen
   void _showSnackBar(String msg, {bool isError = true}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -52,7 +60,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  // 1. LOGIN WITH EMAIL
+  // --- 1. LOGIN WITH EMAIL ---
+  // Validates inputs and attempts to log the user in via the session manager
   void _handleEmailLogin() {
     final email = _loginEmailController.text.trim();
     if (email.isEmpty || _loginPasswordController.text.isEmpty) {
@@ -65,11 +74,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       _navigateToHome();
     } else {
       _showSnackBar('Account does not exist! Please create an account first.');
-      _tabController.animateTo(1); // Redirect to Create Account tab
+      _tabController.animateTo(1); // Redirects the UI to the "Create Account" tab
     }
   }
 
-  // 2. CREATE ACCOUNT WITH EMAIL
+  // --- 2. CREATE ACCOUNT WITH EMAIL ---
+  // Validates inputs and registers a new user session
   void _handleCreateAccount() {
     final name = _signUpNameController.text.trim();
     final email = _signUpEmailController.text.trim();
@@ -90,11 +100,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       _navigateToHome();
     } else {
       _showSnackBar('Account already exists! Please Sign In instead.');
-      _tabController.animateTo(0);
+      _tabController.animateTo(0); // Redirects the UI to the "Sign In" tab
     }
   }
 
-  // 3. GOOGLE AUTH USING THE GOOGLE SIGN-IN SDK
+  // --- 3. GOOGLE AUTH ---
+  // Triggers the Google Sign-In flow
   Future<void> _handleGoogleLogin() async {
     final ok = await UserSession().signInWithGoogle();
     if (!mounted) return;
@@ -106,7 +117,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
-  // 4. APPLE AUTH USING THE SIGN-IN WITH APPLE SDK
+  // --- 4. APPLE AUTH ---
+  // Triggers the Sign-In with Apple flow
   Future<void> _handleAppleLogin() async {
     final ok = await UserSession().signInWithApple();
     if (!mounted) return;
@@ -129,12 +141,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             child: Column(
               children: [
                 const SizedBox(height: 20),
+                
+                // App Logo / Icon Header
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: const BoxDecoration(color: Color(0xFF233B2B), shape: BoxShape.circle),
                   child: const Icon(Icons.eco_rounded, size: 40, color: Colors.white),
                 ),
                 const SizedBox(height: 12),
+                
+                // App Title & Subtitle
                 const Text('Kebunku', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF233B2B))),
                 const SizedBox(height: 6),
                 const Text(
@@ -143,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 ),
                 const SizedBox(height: 20),
 
-                // TAB SWITCHER
+                // TAB SWITCHER UI (Sign In / Create Account)
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
@@ -167,12 +183,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
                 const SizedBox(height: 20),
 
+                // TAB VIEWS (The actual forms mapped to the tabs above)
                 SizedBox(
                   height: 250,
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      // SIGN IN FORM
+                      // VIEW 1: SIGN IN FORM
                       Column(
                         children: [
                           TextField(
@@ -186,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           const SizedBox(height: 12),
                           TextField(
                             controller: _loginPasswordController,
-                            obscureText: true,
+                            obscureText: true, // Hides password characters
                             decoration: InputDecoration(
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
@@ -209,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ],
                       ),
 
-                      // CREATE ACCOUNT FORM
+                      // VIEW 2: CREATE ACCOUNT FORM
                       Column(
                         children: [
                           TextField(
@@ -232,7 +249,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           const SizedBox(height: 10),
                           TextField(
                             controller: _signUpPasswordController,
-                            obscureText: true,
+                            obscureText: true, // Hides password characters
                             decoration: InputDecoration(
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
@@ -259,6 +276,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 ),
 
                 const SizedBox(height: 12),
+                
+                // OR DIVIDER
                 Row(
                   children: const [
                     Expanded(child: Divider()),
@@ -268,8 +287,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 ),
                 const SizedBox(height: 16),
 
+                // SOCIAL AUTHENTICATION BUTTONS
                 Row(
                   children: [
+                    // Google Login Button
                     Expanded(
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
@@ -281,6 +302,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       ),
                     ),
                     const SizedBox(width: 12),
+                    // Apple Login Button
                     Expanded(
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(

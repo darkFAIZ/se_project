@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+// Represents an item within the user's shopping cart
 class CartItem {
   final Map<String, dynamic> product;
   int quantity;
@@ -14,6 +15,7 @@ class CartItem {
   CartItem({required this.product, this.quantity = 1});
 }
 
+// Data model representing an authenticated user's profile and data
 class UserAccount {
   final String id;
   final String name;
@@ -41,11 +43,14 @@ class UserAccount {
         cartItems = cartItems ?? [];
 }
 
+// Global Singleton managing application state, authentications, and local persistence
 class UserSession extends ChangeNotifier {
+  // Singleton pattern instantiation
   static final UserSession _instance = UserSession._internal();
   factory UserSession() => _instance;
 
   UserSession._internal() {
+    // Asynchronously load saved session data upon initialization
     Future.microtask(loadSession);
   }
 
@@ -54,16 +59,19 @@ class UserSession extends ChangeNotifier {
 
   UserAccount? _currentUser;
 
+  // Getters to expose state safely
   List<Map<String, dynamic>> get orders => List.unmodifiable(_orders);
   UserAccount? get currentUser => _currentUser;
 
+  // Standardizes dynamic product maps to ensure uniform keys and fallback values for storage
   Map<String, dynamic> _normalizeProductForStorage(Map<String, dynamic> product) {
     final normalized = <String, dynamic>{};
     for (final entry in product.entries) {
-      if (entry.key == 'imageFile') continue;
+      if (entry.key == 'imageFile') continue; // Prevent attempting to serialize File objects
       normalized[entry.key] = entry.value;
     }
 
+    // Process image data into string paths
     final imageFile = product['imageFile'];
     if (imageFile is File) {
       normalized['imagePath'] = imageFile.path;
@@ -71,6 +79,7 @@ class UserSession extends ChangeNotifier {
       normalized['imagePath'] = product['imagePath'].toString();
     }
 
+    // Apply defaults to handle missing map keys gracefully
     normalized['title'] = (product['title'] ?? product['name'] ?? 'Product').toString();
     normalized['name'] = (product['name'] ?? product['title'] ?? normalized['title']).toString();
     normalized['category'] = (product['category'] ?? product['subCategory'] ?? 'General').toString();
@@ -80,6 +89,7 @@ class UserSession extends ChangeNotifier {
     normalized['stock'] = (product['stock'] ?? 'Available').toString();
     normalized['description'] = (product['description'] ?? 'Fresh product').toString();
 
+    // Reconcile image URLs prioritizing local over remote
     final remoteImageUrl = (product['imageUrl'] ?? product['image'] ?? '').toString();
     final localImagePath = (normalized['imagePath'] ?? '').toString();
 
@@ -94,6 +104,7 @@ class UserSession extends ChangeNotifier {
     return normalized;
   }
 
+  // Serializes a UserAccount into a Map for SharedPreferences JSON storage
   Map<String, dynamic> _accountToMap(UserAccount account) {
     return {
       'id': account.id,
@@ -113,6 +124,7 @@ class UserSession extends ChangeNotifier {
     };
   }
 
+  // Deserializes a Map back into a structured UserAccount object
   UserAccount _accountFromMap(Map<String, dynamic> accountMap) {
     final userPosts = (accountMap['userPosts'] as List? ?? [])
         .map((post) => Map<String, dynamic>.from(post as Map))
@@ -145,6 +157,7 @@ class UserSession extends ChangeNotifier {
     );
   }
 
+  // Reads the stored users and active session from disk
   Future<void> loadSession() async {
     final prefs = await SharedPreferences.getInstance();
     final storedUsers = prefs.getString('registered_users');
@@ -160,6 +173,7 @@ class UserSession extends ChangeNotifier {
       }
     }
 
+    // Initialize a dummy account if storage is completely empty
     if (_registeredUsers.isEmpty) {
       _registeredUsers['faiz.user@gmail.com'] = UserAccount(
         id: 'usr_1',
@@ -183,13 +197,15 @@ class UserSession extends ChangeNotifier {
       );
     }
 
+    // Restore the logged-in user if they didn't log out in their previous session
     if (currentUserEmail != null && _registeredUsers.containsKey(currentUserEmail.toLowerCase())) {
       _currentUser = _registeredUsers[currentUserEmail.toLowerCase()];
     }
 
-    notifyListeners();
+    notifyListeners(); // Notifies UI to rebuild with loaded data
   }
 
+  // Writes all memory data to SharedPreferences disk storage
   Future<void> saveSession() async {
     final prefs = await SharedPreferences.getInstance();
     final usersMap = {
@@ -200,12 +216,14 @@ class UserSession extends ChangeNotifier {
     if (_currentUser != null) {
       await prefs.setString('current_user_email', _currentUser!.email.toLowerCase());
     } else {
-      await prefs.remove('current_user_email');
+      await prefs.remove('current_user_email'); // Wipes session cache on logout
     }
   }
 
+  // Validates if an email is already registered
   bool userExists(String email) => _registeredUsers.containsKey(email.toLowerCase());
 
+  // Handles standard email login
   bool login(String email) {
     final key = email.toLowerCase();
     if (_registeredUsers.containsKey(key)) {
@@ -217,9 +235,10 @@ class UserSession extends ChangeNotifier {
     return false;
   }
 
+  // Handles account creation
   bool registerAccount({required String name, required String email, required String authType, String? avatarUrl}) {
     final key = email.toLowerCase();
-    if (_registeredUsers.containsKey(key)) return false;
+    if (_registeredUsers.containsKey(key)) return false; // Prevent duplicates
 
     final newAcc = UserAccount(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -235,6 +254,7 @@ class UserSession extends ChangeNotifier {
     return true;
   }
 
+  // Initiates Google OAuth Login Flow
   Future<bool> signInWithGoogle() async {
     try {
       final googleSignIn = GoogleSignIn();
@@ -257,10 +277,11 @@ class UserSession extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (_) {
-      return false;
+      return false; // Silently fails returning false for UI handling
     }
   }
 
+  // Initiates Apple OAuth Login Flow
   Future<bool> signInWithApple() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
@@ -270,10 +291,12 @@ class UserSession extends ChangeNotifier {
         ],
       );
 
+      // Apple hides email by default; uses relay if masked
       final email = credential.email ?? '${DateTime.now().millisecondsSinceEpoch}@privaterelay.appleid.com';
       final name = [credential.givenName, credential.familyName].whereType<String>().join(' ').trim();
       final key = email.toLowerCase();
       final existingUser = _registeredUsers[key];
+      
       final signedInUser = existingUser ?? UserAccount(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name.isNotEmpty ? name : email.split('@').first,
@@ -292,6 +315,7 @@ class UserSession extends ChangeNotifier {
     }
   }
 
+  // Profile update method for changing display picture
   void updateCurrentUserAvatar(File avatarFile) {
     if (_currentUser == null) return;
 
@@ -301,12 +325,14 @@ class UserSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Wipes active user from memory
   void logout() {
     _currentUser = null;
     unawaited(saveSession());
     notifyListeners();
   }
 
+  // Handles adding new merchant posts
   void addPost(Map<String, dynamic> post) {
     if (_currentUser != null) {
       _currentUser!.userPosts.insert(0, _normalizeProductForStorage(post));
@@ -323,6 +349,7 @@ class UserSession extends ChangeNotifier {
     }
   }
 
+  // Checks if a specific product string title exists in the user's saved items array
   bool isSaved(Map<String, dynamic> product) {
     if (_currentUser == null) return false;
 
@@ -335,6 +362,7 @@ class UserSession extends ChangeNotifier {
     });
   }
 
+  // Bookmark toggler functionality
   void toggleSaveProduct(Map<String, dynamic> product) {
     if (_currentUser == null) return;
 
@@ -361,6 +389,7 @@ class UserSession extends ChangeNotifier {
     }
   }
 
+  // Shopping Cart Management Logic below:
   void clearCart() {
     if (_currentUser != null) {
       _currentUser!.cartItems.clear();
@@ -371,6 +400,8 @@ class UserSession extends ChangeNotifier {
 
   void addToCart(Map<String, dynamic> product) {
     if (_currentUser == null) return;
+    
+    // Finds if product already exists to bundle quantities rather than duplicate rows
     final existingIndex = _currentUser!.cartItems.indexWhere((item) => item.product['title'] == product['title']);
 
     if (existingIndex >= 0) {
@@ -385,6 +416,8 @@ class UserSession extends ChangeNotifier {
   void updateCartQuantity(int index, int delta) {
     if (_currentUser != null && index < _currentUser!.cartItems.length) {
       _currentUser!.cartItems[index].quantity += delta;
+      
+      // Auto-removes item from array if quantity hits zero or lower
       if (_currentUser!.cartItems[index].quantity <= 0) {
         _currentUser!.cartItems.removeAt(index);
       }
@@ -393,6 +426,7 @@ class UserSession extends ChangeNotifier {
     }
   }
 
+  // Tallies cart array returning gross total price
   double get cartTotalPrice {
     if (_currentUser == null) return 0;
     return _currentUser!.cartItems.fold(0, (sum, item) {
@@ -403,6 +437,7 @@ class UserSession extends ChangeNotifier {
     });
   }
 
+  // Executes checkout by adding to order history and wiping the cart
   void placeOrder(Map<String, dynamic> order) {
     _orders.insert(0, order);
     if (_currentUser != null) {

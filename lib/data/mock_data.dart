@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Abstract Base Class
+// Abstract Base Class defining the blueprint for all products
 abstract class Product {
   final String id;
   final String name;
@@ -24,11 +24,11 @@ abstract class Product {
     required this.location,
   });
 
-  // Polymorphic method to get badge color
+  // Polymorphic method to get badge color, to be overridden by subclasses
   Color getBadgeColor();
 }
 
-// 1. Concrete Class: Vegetable
+// 1. Concrete Class: Vegetable inheriting from Product
 class VegetableProduct extends Product {
   VegetableProduct({
     required super.id,
@@ -39,13 +39,13 @@ class VegetableProduct extends Product {
     required super.availableQuantityKg,
     required super.farmerName,
     required super.location,
-  }) : super(categoryName: 'Vegetable');
+  }) : super(categoryName: 'Vegetable'); // Hardcodes the category name
 
   @override
-  Color getBadgeColor() => Colors.lightGreen.shade200;
+  Color getBadgeColor() => Colors.lightGreen.shade200; // Specific color for vegetables
 }
 
-// 2. Concrete Class: Fruit
+// 2. Concrete Class: Fruit inheriting from Product
 class FruitProduct extends Product {
   FruitProduct({
     required super.id,
@@ -59,10 +59,10 @@ class FruitProduct extends Product {
   }) : super(categoryName: 'Fruit');
 
   @override
-  Color getBadgeColor() => Colors.orangeAccent.shade100;
+  Color getBadgeColor() => Colors.orangeAccent.shade100; // Specific color for fruits
 }
 
-// 3. Concrete Class: Grain
+// 3. Concrete Class: Grain inheriting from Product
 class GrainProduct extends Product {
   GrainProduct({
     required super.id,
@@ -76,10 +76,10 @@ class GrainProduct extends Product {
   }) : super(categoryName: 'Rice & Wheat');
 
   @override
-  Color getBadgeColor() => Colors.amber.shade200;
+  Color getBadgeColor() => Colors.amber.shade200; // Specific color for grains
 }
 
-// Polymorphic Mock Repository
+// Polymorphic Mock Repository holding static dummy data for testing
 class ProductRepository {
   static final List<Product> mockProducts = [
     VegetableProduct(
@@ -134,11 +134,12 @@ class ProductRepository {
     ),
   ];
 
-  // Polymorphic Category Filtering Query
+  // Polymorphic Category Filtering Query to search through the mock products
   static List<Product> getByCategory(String category) {
     return mockProducts.where((p) {
       final target = category.toLowerCase().trim();
       final current = p.categoryName.toLowerCase().trim();
+      // Checks for partial string matches for robust filtering
       return current.contains(target) || target.contains(current);
     }).toList();
   }

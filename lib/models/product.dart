@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Abstract Base Class
+// Abstract Base Class establishing the contract for product types
 abstract class Product {
   final String id;
   final String name;
@@ -19,6 +19,7 @@ abstract class Product {
     required this.subCategory,
     required this.price,
     required this.imageUrl,
+    // Default values assigned if not explicitly provided
     this.farmerName = 'Pak Tani',
     this.location = 'BOGOR',
     this.availableQuantityKg = 50.0,
@@ -119,7 +120,7 @@ class ProductRepository {
     ),
   ];
 
-  // Polymorphic Filter Query Method
+  // Polymorphic Filter Query Method matching exact category string
   static List<Product> getByCategory(String category) {
     return allProducts
         .where((p) => p.categoryName.toLowerCase() == category.toLowerCase())

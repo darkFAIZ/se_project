@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import '../models/user_session.dart';
 import 'product_detail_screen.dart'; // <--- Vital import to fix the red line
 
+// Screen for searching and filtering products based on user input and selected category chips
 class CategorySearchScreen extends StatefulWidget {
   final String selectedCategory;
 
   const CategorySearchScreen({
     super.key,
-    this.selectedCategory = 'All',
+    this.selectedCategory = 'All', // Defaults to 'All' if no category is passed
   });
 
   @override
@@ -28,7 +29,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
     'Organic',
   ];
 
-  // Sample/Mock products list
+  // Sample/Mock products list acting as the initial database of items
   final List<Map<String, dynamic>> _allProducts = [
     {
       'title': 'Organic Spinach',
@@ -75,6 +76,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize the active category based on the widget parameter
     _activeCategory = widget.selectedCategory;
   }
 
@@ -84,6 +86,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
     super.dispose();
   }
 
+  // Getter to dynamically filter products based on the search query and active category chip
   List<Map<String, dynamic>> get _filteredProducts {
     // Combine user posts from UserSession with static products
     final sessionPosts = UserSession().currentUser?.userPosts ?? [];
@@ -160,7 +163,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
               ),
             ),
 
-            // 2. CATEGORY PILLS
+            // 2. CATEGORY PILLS (Horizontal Scrollable)
             SizedBox(
               height: 48,
               child: ListView.builder(
@@ -313,6 +316,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
                                             padding: EdgeInsets.zero,
                                             icon: const Icon(Icons.add_shopping_cart, size: 18, color: Color(0xFF233B2B)),
                                             onPressed: () {
+                                              // Add item to cart instantly
                                               UserSession().addToCart(product);
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                 SnackBar(

@@ -4,6 +4,7 @@ import '../models/user_session.dart';
 import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
 
+// CartScreen displays the user's selected items and total price, allowing them to adjust quantities or proceed to checkout.
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -16,6 +17,7 @@ class _CartScreenState extends State<CartScreen> {
   void initState() {
     super.initState();
     // Listen for state changes (adding items, updating quantities, removing items)
+    // This ensures the UI updates whenever the underlying UserSession data changes.
     UserSession().addListener(_onSessionUpdate);
   }
 
@@ -27,11 +29,12 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   void dispose() {
+    // Clean up the listener to prevent memory leaks when the screen is destroyed.
     UserSession().removeListener(_onSessionUpdate);
     super.dispose();
   }
 
-  // Clear cart confirmation
+  // Clear cart confirmation dialog to prevent accidental deletion of all items.
   void _showClearCartDialog() {
     showDialog(
       context: context,
@@ -48,7 +51,7 @@ class _CartScreenState extends State<CartScreen> {
             onPressed: () {
               final user = UserSession().currentUser;
               if (user != null) {
-                UserSession().clearCart();
+                UserSession().clearCart(); // Empties the cart in the global session
                 Navigator.pop(context);
               }
               Navigator.pop(context);
@@ -62,6 +65,7 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Retrieve current cart data and total price from the session singleton.
     final session = UserSession();
     final cartItems = session.currentUser?.cartItems ?? [];
     final double totalPrice = session.cartTotalPrice;
@@ -76,6 +80,7 @@ class _CartScreenState extends State<CartScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          // Only show the clear cart button if there are items in the cart
           if (cartItems.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent),
@@ -85,6 +90,7 @@ class _CartScreenState extends State<CartScreen> {
         ],
       ),
       body: SafeArea(
+        // Render an empty state view if there are no items, otherwise show the list
         child: cartItems.isEmpty
             ? Center(
                 child: Column(
@@ -123,9 +129,11 @@ class _CartScreenState extends State<CartScreen> {
                       itemBuilder: (context, index) {
                         final item = cartItems[index];
                         final product = item.product;
+                        // Handle potential image sources (local file vs network URL)
                         final File? imageFile = product['imageFile'];
                         final String imageUrl = product['imageUrl'] ?? '';
 
+                        // Safely parse the price to handle string or numeric inputs
                         final double price = (product['price'] is num)
                             ? (product['price'] as num).toDouble()
                             : double.tryParse(product['price'].toString()) ?? 0;
@@ -148,7 +156,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                           child: Row(
                             children: [
-                              // Image Thumbnail (clickable)
+                              // Image Thumbnail (clickable to view product details)
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(
@@ -163,6 +171,7 @@ class _CartScreenState extends State<CartScreen> {
                                   child: SizedBox(
                                     width: 70,
                                     height: 70,
+                                    // Fallback chain: File -> Network -> Placeholder
                                     child: imageFile != null
                                         ? Image.file(imageFile, fit: BoxFit.cover)
                                         : (imageUrl.isNotEmpty
@@ -319,6 +328,7 @@ class _CartScreenState extends State<CartScreen> {
                                 return;
                               }
 
+                              // Map CartItem objects back to plain maps to pass to CheckoutScreen
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(

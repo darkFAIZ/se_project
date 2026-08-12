@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/user_session.dart';
 
+// ProductDetailScreen provides an in-depth view of a product, allowing quantity modification and adding to cart
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
@@ -15,18 +16,21 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  // State variable holding the amount of items the user wants to add to the cart
   int _quantity = 1;
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    // Check global session state to determine if this exact product is bookmarked by the user
     final isSaved = UserSession().isSaved(product);
 
-    // Image handling for File vs Network URL vs Fallback
+    // Image handling mapping potential sources: priority is local File, fallback is Network URL
     final String imagePath = (product['imagePath'] ?? '').toString();
     final File? imageFile = product['imageFile'] ?? (imagePath.isNotEmpty ? File(imagePath) : null);
     final String imageUrl = imagePath.isNotEmpty ? imagePath : (product['imageUrl'] ?? '');
 
+    // Safely parse price converting to double format for UI formatting
     final double price = (product['price'] is num)
         ? (product['price'] as num).toDouble()
         : double.tryParse(product['price'].toString()) ?? 0.0;
@@ -46,6 +50,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     // Image Banner with Floating Back & Save Buttons
                     Stack(
                       children: [
+                        // Image Container Background
                         Container(
                           height: 320,
                           width: double.infinity,
@@ -69,7 +74,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   : const Icon(Icons.image, size: 50, color: Colors.grey)),
                         ),
 
-                        // Back Button
+                        // Floating Back Navigation Button
                         Positioned(
                           top: 16,
                           left: 16,
@@ -82,7 +87,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                         ),
 
-                        // Bookmark/Save Button
+                        // Floating Bookmark/Save Action Button
                         Positioned(
                           top: 16,
                           right: 16,
@@ -95,6 +100,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                               onPressed: () {
                                 setState(() {
+                                  // Modifies global UserSession state and locally redraws UI
                                   UserSession().toggleSaveProduct(product);
                                 });
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +122,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                     // 2. PRODUCT DETAILS CONTAINER
                     Transform.translate(
-                      offset: const Offset(0, -20),
+                      offset: const Offset(0, -20), // Pulls the container up to overlap the image slightly
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: const BoxDecoration(
@@ -126,7 +132,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Category Tag
+                            // Category Badge Tag
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
@@ -171,7 +177,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Farmer Info & Origin Card
+                            // Farmer Info & Origin Context Card
                             Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
@@ -209,7 +215,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             const SizedBox(height: 20),
 
-                            // Description Section
+                            // Detailed Text Description Section
                             const Text(
                               'Description',
                               style: TextStyle(
@@ -230,7 +236,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             const SizedBox(height: 24),
 
-                            // Quantity Selector Row
+                            // Dynamic Quantity Selector Row
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -253,7 +259,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         icon: const Icon(Icons.remove, size: 18),
                                         onPressed: () {
                                           if (_quantity > 1) {
-                                            setState(() => _quantity--);
+                                            setState(() => _quantity--); // Decrement if above 1
                                           }
                                         },
                                       ),
@@ -270,7 +276,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       IconButton(
                                         icon: const Icon(Icons.add, size: 18),
                                         onPressed: () {
-                                          setState(() => _quantity++);
+                                          setState(() => _quantity++); // Increment quantity
                                         },
                                       ),
                                     ],
@@ -287,7 +293,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
 
-            // 3. BOTTOM ADD TO CART / BUY BAR
+            // 3. BOTTOM ACTION BAR: Pricing calculation and Add to Cart Button
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -302,6 +308,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               child: Row(
                 children: [
+                  // Calculated Total Price Output
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,6 +325,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ],
                   ),
                   const SizedBox(width: 20),
+                  // Checkout Action Button
                   Expanded(
                     child: SizedBox(
                       height: 50,
@@ -330,7 +338,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           elevation: 0,
                         ),
                         onPressed: () {
-                          // Add to session cart with quantity
+                          // Iteratively adds the exact product configuration based on defined _quantity
                           for (int i = 0; i < _quantity; i++) {
                             UserSession().addToCart(product);
                           }

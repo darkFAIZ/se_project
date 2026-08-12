@@ -5,6 +5,7 @@ import '../models/user_session.dart';
 import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
 
+// The main landing screen holding the top categories, search, and a grid of products
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -13,30 +14,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Controller to handle search bar text input
   final TextEditingController _searchController = TextEditingController();
+  // State variables for currently active filter parameters
   String _selectedCategory = 'All';
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    // Listening to the user session ensures the UI redraws if the user adds a new post or saves an item globally
     UserSession().addListener(_onSessionChanged);
   }
 
   @override
   void dispose() {
+    // Remove listeners and dispose of controllers to prevent memory leaks
     UserSession().removeListener(_onSessionChanged);
     _searchController.dispose();
     super.dispose();
   }
 
+  // Triggers a UI rebuild when the underlying Session singleton updates
   void _onSessionChanged() {
     if (mounted) {
       setState(() {});
     }
   }
 
-  // Full category list with icons
+  // Full category list with icons to be rendered horizontally
   final List<Map<String, dynamic>> _categories = const [
     {'name': 'All', 'icon': Icons.grid_view_rounded},
     {'name': 'Vegetables', 'icon': Icons.eco_rounded},
@@ -46,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Herbs', 'icon': Icons.local_florist_rounded},
   ];
 
-  // Comprehensive Marketplace Product Catalog
+  // Comprehensive Marketplace Product Catalog (Static dummy data)
   final List<Map<String, dynamic>> _allProducts = const [
     {
       'title': 'Broccoli',
@@ -138,6 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   ];
 
+  // Helper routing function to product detail
   void _navigateToDetail(Map<String, dynamic> product) {
     Navigator.push(
       context,
@@ -150,10 +157,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final currentUser = UserSession().currentUser;
+    // Get the most recent order to display a tracking shortcut if it exists
     final latestOrder = UserSession().orders.isNotEmpty ? UserSession().orders.first : null;
     final userPosts = currentUser?.userPosts ?? [];
+    
+    // Combine static dummy products with dynamic posts created by the current user
     final availableProducts = <Map<String, dynamic>>[..._allProducts, ...userPosts];
 
+    // Filter available products by the selected category chip and active search text query
     final filteredProducts = availableProducts.where((product) {
       final matchesCategory = _selectedCategory == 'All' ||
           (product['category'] ?? '').toString().toLowerCase() == _selectedCategory.toLowerCase();
@@ -280,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: IconButton(
                         icon: const Icon(Icons.tune_rounded, color: Colors.white),
                         onPressed: () {
-                          // Quick Filter Dialog
+                          // Quick Filter/Sorting Bottom Sheet Modal
                           showModalBottomSheet(
                             context: context,
                             shape: const RoundedRectangleBorder(
@@ -408,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // 4. ORDER TRACKING SHORTCUT
+            // 4. ORDER TRACKING SHORTCUT (Appears dynamically if user has active orders)
             if (latestOrder != null)
               SliverToBoxAdapter(
                 child: Padding(
@@ -471,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-            // 5. CATEGORIES HORIZONTAL SELECTOR
+            // 5. CATEGORIES HORIZONTAL SELECTOR (List of Chips for product filtering)
             SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                _selectedCategory = name;
+                                _selectedCategory = name; // Update filter state
                               });
                             },
                             child: AnimatedContainer(
@@ -547,7 +558,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // 5. PRODUCTS SECTION TITLE & COUNT
+            // 6. PRODUCTS SECTION TITLE & COUNT
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
@@ -567,9 +578,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // 6. PRODUCT GRID VIEW
+            // 7. PRODUCT GRID VIEW
             filteredProducts.isEmpty
-                ? SliverToBoxAdapter(
+                ? SliverToBoxAdapter( // Renders empty state if no products match the query
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 40.0),
                       child: Center(
@@ -595,7 +606,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final product = filteredProducts[index];
+                          // Validates if product is saved globally via UserSession
                           final isSaved = UserSession().isSaved(product);
+                          // Determine if image should be loaded from local files or network
                           final String imagePath = (product['imagePath'] ?? '').toString();
                           final bool hasLocalImage = imagePath.isNotEmpty && File(imagePath).existsSync();
 
@@ -641,6 +654,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   ),
                                                 ),
                                         ),
+                                        // Bookmark / Save toggle button
                                         Positioned(
                                           top: 8,
                                           right: 8,
@@ -711,7 +725,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                            // Add To Cart Button
+                                            // Add To Cart Button Shortcut
                                             InkWell(
                                               onTap: () {
                                                 UserSession().addToCart(product);
@@ -750,7 +764,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 30)),
+            const SliverToBoxAdapter(child: SizedBox(height: 30)), // Bottom spacing cushion
           ],
         ),
       ),

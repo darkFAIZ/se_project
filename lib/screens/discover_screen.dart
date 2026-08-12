@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'shop_detail_screen.dart';
 
+// DiscoverScreen provides a map-centric view displaying nearby physical farmer shops
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
 
@@ -13,7 +14,7 @@ class DiscoverScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 12),
 
-            // 1. LOCATION HEADER BAR
+            // 1. LOCATION HEADER BAR (Displays current active location for searching)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Container(
@@ -63,7 +64,7 @@ class DiscoverScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // 2. FILTER & SORT BAR
+            // 2. FILTER & SORT BAR (Quick toggles for list modification)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -86,13 +87,13 @@ class DiscoverScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // 3. MAP AREA WITH FARMER PINS
+            // 3. MAP AREA WITH FARMER PINS (Visual representation of shop locations)
             SizedBox(
               height: 180,
               width: double.infinity,
               child: Stack(
                 children: [
-                  // Stylized Map Background (Grid effect)
+                  // Stylized Map Background (Grid effect using CustomPainter)
                   Container(
                     color: const Color(0xFFE8EEF5),
                     child: CustomPaint(
@@ -101,7 +102,7 @@ class DiscoverScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Pins / Badges on Map
+                  // Pins / Badges on Map placed absolutely to simulate coordinate plotting
                   Positioned(
                     top: 20,
                     left: 50,
@@ -115,7 +116,7 @@ class DiscoverScreen extends StatelessWidget {
                   Positioned(
                     top: 80,
                     left: 120,
-                    child: _buildUserPin(),
+                    child: _buildUserPin(), // Highlighted pin indicating user's location
                   ),
                   Positioned(
                     bottom: 30,
@@ -131,7 +132,7 @@ class DiscoverScreen extends StatelessWidget {
               ),
             ),
 
-            // 4. SCROLLABLE FARMER SHOPS LIST
+            // 4. SCROLLABLE FARMER SHOPS LIST (Detailed cards for each shop)
             Expanded(
               child: Container(
                 decoration: const BoxDecoration(
@@ -188,7 +189,7 @@ class DiscoverScreen extends StatelessWidget {
     );
   }
 
-  // Filter/Sort Dropdown Chip
+  // Helper Widget: Renders Filter/Sort Dropdown Chip
   static Widget _buildDropdownChip({required String label}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -213,7 +214,7 @@ class DiscoverScreen extends StatelessWidget {
     );
   }
 
-  // Shop Pin Widget for Map
+  // Helper Widget: Renders Shop Pin Widget for Map
   static Widget _buildMapPin(String name) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -239,7 +240,7 @@ class DiscoverScreen extends StatelessWidget {
     );
   }
 
-  // User Pin Widget for Map
+  // Helper Widget: Renders Current User Pin Widget for Map
   static Widget _buildUserPin() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -258,8 +259,7 @@ class DiscoverScreen extends StatelessWidget {
     );
   }
 
-  // Helper to open shop detail screen
-// Helper to open shop detail screen
+  // Helper logic to navigate and open the ShopDetailScreen passing the shop's name map
   static void _navigateToShop(BuildContext context, String shopName) {
     Navigator.push(
       context,
@@ -272,7 +272,7 @@ class DiscoverScreen extends StatelessWidget {
     );
   }
 
-  // Farmer Shop Card Widget
+  // Helper Widget: Renders individual Farmer Shop Card for the list view
   static Widget _buildFarmerShopCard({
     required BuildContext context,
     required String imageUrl,
@@ -302,7 +302,7 @@ class DiscoverScreen extends StatelessWidget {
                   child: const Icon(Icons.store, size: 40, color: Colors.grey),
                 ),
               ),
-              // Discount Tag Badge (If offer exists)
+              // Discount Tag Badge (If offer exists it is overlaid on the image)
               if (discountOffer != null)
                 Positioned(
                   top: 12,
@@ -336,7 +336,7 @@ class DiscoverScreen extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // Shop Name
+        // Shop Name text
         Text(
           shopName,
           style: const TextStyle(
@@ -369,7 +369,7 @@ class DiscoverScreen extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // Description & Select Button
+        // Description & Navigate Select Button
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -410,7 +410,7 @@ class DiscoverScreen extends StatelessWidget {
   }
 }
 
-// Custom Painter to draw stylized map grid lines in background
+// Custom Painter to draw stylized map grid lines in background simulating city blocks/roads
 class MapGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

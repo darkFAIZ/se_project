@@ -5,6 +5,7 @@ import '../models/user_session.dart';
 import 'login_screen.dart';
 import 'product_detail_screen.dart';
 
+// ProfileScreen manages user data display, displays saved items, and allows users to post products for sale
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -13,9 +14,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
+  // Tab controller for managing the "Save" and "Your posts" interface navigation
   late TabController _tabController;
 
-  // Controllers for creating a new post
+  // Controllers for creating a new post from the bottom sheet form
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _farmerController = TextEditingController();
@@ -25,8 +27,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   String _selectedCategory = 'Vegetables';
   File? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
+  final ImagePicker _picker = ImagePicker(); // For uploading files from gallery
 
+  // Standard marketplace categories
   final List<String> _categoryOptions = [
     'Vegetables',
     'Fruits',
@@ -38,11 +41,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    // Exactly 2 tabs: 0 -> Save, 1 -> Your posts
+    // Exactly 2 tabs: 0 -> Save, 1 -> Your posts. Initial view set to user posts.
     _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
     UserSession().addListener(_onSessionUpdate);
   }
 
+  // Force rebuilding of UI when global session data (Saved list/Posts list) updates
   void _onSessionUpdate() {
     if (mounted) {
       setState(() {});
@@ -62,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  // Pick an image from gallery for a new product upload
+  // Pick an image from gallery for a new product upload (uses StateSetter to update Modal scope)
   Future<void> _pickImage(StateSetter setModalState) async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -72,6 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
+  // Update Avatar Profile Picture
   Future<void> _pickAvatarImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -81,6 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
+  // Helper builder handling product images gracefully accounting for Local Files, Networks, or Error cases
   Widget _buildProductImageForProfile(Map<String, dynamic> product, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
     final String imagePath = (product['imagePath'] ?? '').toString();
     final File? imageFile = product['imageFile'] is File
@@ -88,14 +94,17 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         : (imagePath.isNotEmpty ? File(imagePath) : null);
     final String imageUrl = (product['imageUrl'] ?? '').toString();
 
+    // Condition 1: Exists locally
     if (imageFile != null && imageFile.existsSync()) {
       return Image.file(imageFile, width: width, height: height, fit: fit);
     }
 
+    // Condition 2: Valid network URL
     if (imageUrl.trim().isNotEmpty && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
       return Image.network(imageUrl, width: width, height: height, fit: fit);
     }
 
+    // Fallback block
     return Container(
       width: width,
       height: height,
@@ -104,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  // Show bottom sheet form to upload a new product
+  // Show bottom sheet form allowing user to upload a new product
   void _showUploadProductSheet() {
     final currentUser = UserSession().currentUser;
     _farmerController.text = currentUser?.name ?? 'Pak Tani';
@@ -114,12 +123,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      isScrollControlled: true, // Enables full height form
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
+        // StatefulBuilder is required for the bottom sheet to refresh its internal state
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             return Padding(
@@ -127,7 +137,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 top: 20,
                 left: 20,
                 right: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                // Adjusts padding based on system keyboard overlap
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20, 
               ),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -155,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     const Divider(),
                     const SizedBox(height: 10),
 
-                    // Image Picker Card
+                    // Image Picker Card Input
                     GestureDetector(
                       onTap: () => _pickImage(setModalState),
                       child: Container(
@@ -194,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 16),
 
-                    // Product Title Input
+                    // Product Title Input Field
                     TextField(
                       controller: _titleController,
                       decoration: InputDecoration(
@@ -206,7 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 12),
 
-                    // Price & Category Row
+                    // Price & Category Selectors Row
                     Row(
                       children: [
                         Expanded(
@@ -242,7 +253,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 12),
 
-                    // Origin & Available Stock Row
+                    // Origin & Available Stock Identifiers Row
                     Row(
                       children: [
                         Expanded(
@@ -272,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 12),
 
-                    // Description Input
+                    // Description Input Field
                     TextField(
                       controller: _descriptionController,
                       maxLines: 2,
@@ -284,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 20),
 
-                    // Post Button
+                    // Create Post Action Button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -294,6 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () {
+                          // Validation block for empty form data
                           if (_titleController.text.trim().isEmpty || _priceController.text.trim().isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Please fill in title and price.')),
@@ -303,6 +315,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
                           final double priceVal = double.tryParse(_priceController.text) ?? 10;
 
+                          // Construct product map configuration
                           final newProduct = {
                             'title': _titleController.text.trim(),
                             'price': priceVal,
@@ -323,14 +336,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
                           UserSession().addPost(newProduct);
 
-                          // Clear Form
+                          // Clear Form Data
                           _titleController.clear();
                           _priceController.clear();
                           _descriptionController.clear();
                           _selectedImage = null;
 
-                          Navigator.pop(context);
-                          _tabController.animateTo(1); // Jump to "Your posts" tab
+                          Navigator.pop(context); // Closes Modal
+                          _tabController.animateTo(1); // Jump to "Your posts" tab to show new item
                         },
                         child: const Text(
                           'Publish Product',
@@ -348,7 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  // Delete product confirmation dialog
+  // Reusable confirmation dialog before deleting an active post or saved item
   void _confirmDeleteDialog({required String title, required VoidCallback onDelete}) {
     showDialog(
       context: context,
@@ -363,7 +376,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () {
-              onDelete();
+              onDelete(); // Triggers the specific deletion function passed inside
               Navigator.pop(context);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
@@ -375,6 +388,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    // Access global session attributes
     final user = UserSession().currentUser;
     final savedItems = user?.savedItems ?? [];
     final userPosts = user?.userPosts ?? [];
@@ -408,6 +422,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 ),
                 child: Row(
                   children: [
+                    // Dynamic Profile Image Container
                     Stack(
                       children: [
                         CircleAvatar(
@@ -419,6 +434,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                   ? NetworkImage(user.avatarUrl)
                                   : const NetworkImage('https://i.pravatar.cc/300?img=12')),
                         ),
+                        // Profile Edit Action Bubble
                         Positioned(
                           right: -4,
                           bottom: -2,
@@ -437,6 +453,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       ],
                     ),
                     const SizedBox(width: 16),
+                    // User Detail Info Body
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,15 +490,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         ],
                       ),
                     ),
+                    // Authentication Logout Link
                     IconButton(
                       icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
                       tooltip: 'Logout',
                       onPressed: () {
-                        UserSession().logout();
+                        UserSession().logout(); // Destroys session context
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          (route) => false,
+                          (route) => false, // Prevents backing into session data post logout
                         );
                       },
                     ),
@@ -490,7 +508,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ),
             ),
 
-            // 2. TAB SELECTION BAR (SAVE & YOUR POSTS ONLY)
+            // 2. TAB SELECTION BAR (Provides toggling between Save & Your Posts views)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
@@ -516,7 +534,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
             const SizedBox(height: 12),
 
-            // 3. TAB VIEWS CONTENT
+            // 3. TAB VIEWS CONTENT WRAPPER
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -535,9 +553,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  // BUILDER: SAVED PRODUCTS LIST
+  // BUILDER: SAVED PRODUCTS LIST (Generates layout for globally saved/bookmarked items)
   Widget _buildSavedSection(List<Map<String, dynamic>> savedItems) {
     if (savedItems.isEmpty) {
+      // Empty UI Placeholder
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -617,9 +636,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  // BUILDER: USER POSTS GRID
+  // BUILDER: USER POSTS GRID (Generates layout for items posted/sold by the user)
   Widget _buildUserPostsSection(List<Map<String, dynamic>> userPosts) {
     if (userPosts.isEmpty) {
+      // Empty UI Placeholder
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -676,7 +696,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Product Image + Delete Icon Overlay
+                // Product Image + Delete Icon Overlay Action
                 Expanded(
                   child: Stack(
                     children: [
@@ -691,7 +711,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           onTap: () {
                             _confirmDeleteDialog(
                               title: post['title'] ?? 'Listing',
-                              onDelete: () => UserSession().deletePost(index),
+                              onDelete: () => UserSession().deletePost(index), // Pass deletion closure function
                             );
                           },
                           child: Container(
@@ -708,7 +728,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   ),
                 ),
 
-                // Post Content Info
+                // Post Content Info Text
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Column(

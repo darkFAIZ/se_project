@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_session.dart';
 
+// ShopDetailScreen displays information for a specific physical shop/farmer and their unique product catalog
 class ShopDetailScreen extends StatefulWidget {
   final Map<String, dynamic> shop;
 
@@ -11,9 +12,10 @@ class ShopDetailScreen extends StatefulWidget {
 }
 
 class _ShopDetailScreenState extends State<ShopDetailScreen> {
-  // Sample products for the shop
+  // Collection representing sample products specific to this particular shop
   late List<Map<String, dynamic>> products;
 
+  // Utility to format price logically translating inputs to thousands 'k' format for UI scaling
   double _normalizePrice(dynamic rawPrice) {
     final value = (rawPrice is num)
         ? rawPrice.toDouble()
@@ -29,6 +31,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Static dummy data mapping local products for this specific store
     products = [
       {
         'id': 'p1',
@@ -60,7 +63,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Shop Information Header
+            // Shop Information Header Block (Info fetched directly from the widget mapping)
             Container(
               padding: const EdgeInsets.all(16),
               color: Colors.white,
@@ -91,10 +94,10 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            // Product Grid
+            // Product Grid representing inventory for this specific shop
             GridView.builder(
               shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(), // Allows SingleChildScrollView to govern scrolling
               padding: const EdgeInsets.symmetric(horizontal: 16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -105,6 +108,10 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final product = products[index];
+                
+                // Construct a normalized map productForSession to pass into UserSession functions.
+                // This resolves naming conflicts (e.g. 'name' vs 'title', 'image' vs 'imageUrl')
+                // so session tracking remains consistent globally across screens.
                 final productForSession = {
                   ...product,
                   'title': product['name'] ?? product['title'] ?? 'Product',
@@ -116,6 +123,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                   'stock': product['stock'] ?? 'Available',
                   'description': product['description'] ?? 'Fresh produce from this shop.',
                 };
+                // Determine save state using the standardized map
                 final isSaved = UserSession().isSaved(productForSession);
 
                 return Card(
@@ -126,6 +134,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Stack image and favorite icon overlay
                         Stack(
                           children: [
                             Container(
@@ -147,7 +156,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    UserSession().toggleSaveProduct(productForSession);
+                                    UserSession().toggleSaveProduct(productForSession); // Modifies Global Session state
                                   });
                                 },
                               ),
@@ -160,6 +169,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                           maxLines: 1,
                         ),
+                        // Process raw price UI presentation
                         Text(
                           "Rp ${_normalizePrice(product['price']).toStringAsFixed(0)} k / ${product['unit']}",
                           style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
@@ -172,6 +182,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                               backgroundColor: const Color(0xFF1B4D3E),
                             ),
                             onPressed: () {
+                              // Ensure standardized structure gets pushed into the session shopping cart 
                               final cartProduct = {
                                 ...productForSession,
                                 'title': product['name'] ?? product['title'] ?? 'Product',
@@ -181,7 +192,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                                 'origin': product['origin'] ?? 'Indonesia',
                                 'stock': product['stock'] ?? 'Available',
                                 'description': product['description'] ?? 'Fresh produce from this shop.',
-                                'price': _normalizePrice(product['price']),
+                                'price': _normalizePrice(product['price']), // Injects fixed price value
                               };
 
                               UserSession().addToCart(cartProduct);
@@ -204,5 +215,3 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     );
   }
 }
-
-//the problem when we put it into saved its not saved in the profile not like on the homepage. 

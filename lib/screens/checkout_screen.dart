@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_session.dart';
 
+// CheckoutScreen gathers shipping information, validates payment methods, and finalizes the order
 class CheckoutScreen extends StatefulWidget {
   final List<Map<String, dynamic>> cartItems;
 
@@ -11,6 +12,7 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  // Controllers for address and payment forms to retrieve user input
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _districtController = TextEditingController();
@@ -20,12 +22,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final TextEditingController _expiryController = TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
 
+  // Default payment and bank selections
   String _paymentMethod = 'QRIS';
   String _selectedBank = 'BCA';
   bool _useMapAddress = false;
 
   @override
   void dispose() {
+    // Dispose all controllers to prevent memory leaks
     _addressController.dispose();
     _cityController.dispose();
     _districtController.dispose();
@@ -37,6 +41,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
+  // Calculate the total price based on item prices and quantities
   double get _totalPrice {
     double total = 0;
     for (final item in widget.cartItems) {
@@ -49,6 +54,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return total;
   }
 
+  // Calculate the total number of physical items being purchased
   int get _totalItems {
     int total = 0;
     for (final item in widget.cartItems) {
@@ -58,6 +64,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return total;
   }
 
+  // Helper method to simulate fetching a location from a map service
   void _useDetectedMapAddress() {
     setState(() {
       _useMapAddress = true;
@@ -68,6 +75,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
   }
 
+  // Validates standard card details before allowing checkout
   bool _isCardPaymentComplete() {
     final number = _cardNumberController.text.replaceAll(RegExp(r'\s+'), '');
     return _cardHolderController.text.trim().isNotEmpty &&
@@ -76,6 +84,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _cvvController.text.trim().length >= 3;
   }
 
+  // Checks if the overall form (shipping + payment logic) is valid to proceed
   bool get _isFormValid {
     final address = _addressController.text.trim();
     final city = _cityController.text.trim();
@@ -97,6 +106,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return false;
   }
 
+  // Shows a feedback error if the user tries to checkout with incomplete data
   void _showValidationMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -106,6 +116,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  // Constructs the final order object, saves it to UserSession, clears the cart, and redirects
   void _confirmOrder() {
     if (!_isFormValid) {
       _showValidationMessage();
@@ -139,6 +150,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  // Generates a mock QR code layout for UI visualization purposes
   Widget _buildQrCodePreview() {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -203,6 +215,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 1. ORDER SUMMARY HEADER
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
@@ -236,6 +249,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               const SizedBox(height: 20),
 
+              // 2. DELIVERY ADDRESS FORM
               const Text(
                 'Delivery Address',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -314,6 +328,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
 
               const SizedBox(height: 22),
+              
+              // 3. PAYMENT METHOD SELECTION
               const Text(
                 'Payment Method',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -328,6 +344,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 child: Column(
                   children: [
+                    // QRIS Option
                     Material(
                       color: Colors.transparent,
                       child: RadioListTile<String>(
@@ -339,6 +356,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         activeColor: const Color(0xFF233B2B),
                       ),
                     ),
+                    // Displays QR Code preview if QRIS is selected
                     if (_paymentMethod == 'QRIS')
                       Padding(
                         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -353,6 +371,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ],
                         ),
                       ),
+                    
+                    // Bank Card Option
                     Material(
                       color: Colors.transparent,
                       child: RadioListTile<String>(
@@ -364,6 +384,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         activeColor: const Color(0xFF233B2B),
                       ),
                     ),
+                    // Displays Credit Card form if Card is selected
                     if (_paymentMethod == 'Card') ...[
                       const SizedBox(height: 12),
                       Container(
@@ -444,6 +465,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
 
               const SizedBox(height: 22),
+              
+              // 4. CONFIRM ORDER BUTTON
               SizedBox(
                 width: double.infinity,
                 height: 54,
@@ -467,6 +490,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 }
 
+// OrderTrackingScreen displays the final state of an order after successful checkout
 class OrderTrackingScreen extends StatelessWidget {
   final Map<String, dynamic> order;
 
@@ -475,6 +499,7 @@ class OrderTrackingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final orderStatus = order['status'] as String? ?? 'Packed';
+    // Timeline steps array for UI rendering mapping the progress of the order
     final steps = [
       {'label': 'Packed', 'done': true},
       {'label': 'On the way to your address', 'done': true},
@@ -494,6 +519,7 @@ class OrderTrackingScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header Summary Box
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
@@ -526,11 +552,14 @@ class OrderTrackingScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
+              
+              // Timeline Progress Section
               const Text(
                 'Delivery progress',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               const SizedBox(height: 12),
+              // Map through the mock delivery steps and visually mark current/completed ones
               ...steps.map((step) {
                 final isDone = step['done'] as bool;
                 final isCurrent = step['label'] == orderStatus;
@@ -569,6 +598,8 @@ class OrderTrackingScreen extends StatelessWidget {
                 );
               }),
               const SizedBox(height: 22),
+              
+              // Delivery Details Recap
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -611,10 +642,13 @@ class OrderTrackingScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              
+              // Return to Home Action
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
+                  // Returns the user to the very first route in the stack (Home/Main Shell)
                   onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF233B2B),
