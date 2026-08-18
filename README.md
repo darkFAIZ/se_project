@@ -210,3 +210,49 @@ Overrides: Subclasses (VegetableProduct, FruitProduct) inherit the blueprint but
 
 getByCategory Query: Uses .where() with .toLowerCase().trim() to perform case-insensitive, whitespace-ignoring string matching. It checks if the search string is contained within the category string, or vice versa, ensuring highly forgiving search results.
 
+
+architecture:
+┌────────────────────────────────────────────────────────────────────────┐
+│                          1. VIEW LAYER (UI)                            │
+│  [home_screen]   [discover_screen]   [cart_screen]   [profile_screen]  │
+└───────────────────────────────┬────────────────────────────────────────┘
+                                │ Re-renders UI on State Alerts
+                                ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                     2. APPLICATION STATE ENGINE                        │
+│                           [UserSession]                                │
+│        (Singleton Pattern Provider extending ChangeNotifier)           │
+└───────┬────────────────────────────────────────────────────────┬───────┘
+        │                                                        │
+        │ Encodes / Decodes JSON Maps                            │ Forwards Secure HTTPS
+        ▼                                                        ▼
+┌──────────────────────────────┐                         ┌───────────────┐
+│     3. PERSISTENCE CACHE     │                         │ 4. REST CLIENT│
+│      [SharedPreferences]     │                         │  (HTTP Post / │
+│   (Preserves Cart & Posts)   │                         │   Get Calls)  │
+└──────────────────────────────┘                         └───────┬───────┘
+                                                                 │
+                                         Transmits JSON Payloads │
+                                                                 ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        5. BACKEND API ROUTERS                          │
+│     [/api/auth]      [/api/products]      [/api/cart]    [/api/orders] │
+│                                                                        │
+│                  Mapped & Governed via [main.py]                       │
+└──────────────────────────────────────┬─────────────────────────────────┘
+                                       │
+                                       │ Resolves DB App Pools & Key Exchange
+                                       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      6. CLOUD FIREBASE SERVICE                         │
+│                        [firebase_service.py]                           │
+│              (Establishes firestore.client() app stream)               │
+└──────────────────────────────────────┬─────────────────────────────────┘
+                                       │
+                                       │ Synchronizes Distributed Collections
+                                       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                    7. FIRESTORE DATA REPOSITORY                        │
+│   Documents: [users/] ── Sub-Collections: [/products]                   │
+│   Documents: [products/] , [carts/] , [orders/]                        │
+└────────────────────────────────────────────────────────────────────────┘
